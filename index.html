@@ -121,7 +121,6 @@
             'accent': 'accent-color', 'caret': 'caret-color', 'fill': 'fill', 'stroke': 'stroke',
             'decoration': 'text-decoration-color',
             'from': '--tw-gradient-from-color', 'via': '--tw-gradient-via-color', 'to': '--tw-gradient-to-color',
-            'divide': 'border-color',
             'shadow': '--tw-shadow-color',
             'outline': 'outline-color',
         };
@@ -240,12 +239,6 @@
             'border-l': { 'border-left-width': '1px' }, ...Object.fromEntries([0, 2, 4, 8].map(i => [`border-l-${i}`, { 'border-left-width': `${i}px` }])),
             'border-solid': { 'border-style': 'solid' }, 'border-dashed': { 'border-style': 'dashed' }, 'border-dotted': { 'border-style': 'dotted' }, 'border-double': { 'border-style': 'double' }, 'border-hidden': { 'border-style': 'hidden' }, 'border-none': { 'border-style': 'none' },
             ...Object.fromEntries([0, 5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 100].map(o => [`border-opacity-${o}`, { '--tw-border-opacity': o / 100 }])),
-            // Simplified `divide` utilities. Note: These are meant to style children, which this tool doesn't support. Applying a border to the element itself.
-            'divide-x-0': { 'border-left-width': '0' }, 'divide-x-2': { 'border-left-width': '2px' }, 'divide-x-4': { 'border-left-width': '4px' }, 'divide-x-8': { 'border-left-width': '8px' }, 'divide-x': { 'border-left-width': '1px' },
-            'divide-y-0': { 'border-top-width': '0' }, 'divide-y-2': { 'border-top-width': '2px' }, 'divide-y-4': { 'border-top-width': '4px' }, 'divide-y-8': { 'border-top-width': '8px' }, 'divide-y': { 'border-top-width': '1px' },
-            'divide-x-reverse': { '--divide-x-reverse': 1 }, 'divide-y-reverse': { '--divide-y-reverse': 1 },
-            ...Object.fromEntries([0, 5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 100].map(o => [`divide-opacity-${o}`, { '--divide-opacity': o / 100 }])),
-            'divide-solid': { 'border-style': 'solid' }, 'divide-dashed': { 'border-style': 'dashed' }, 'divide-dotted': { 'border-style': 'dotted' }, 'divide-double': { 'border-style': 'double' }, 'divide-none': { 'border-style': 'none' },
             'outline-0': { 'outline-width': '0px' }, 'outline-1': { 'outline-width': '1px' }, 'outline-2': { 'outline-width': '2px' }, 'outline-4': { 'outline-width': '4px' }, 'outline-8': { 'outline-width': '8px' },
             'outline': { 'outline-style': 'solid' }, 'outline-dashed': { 'outline-style': 'dashed' }, 'outline-dotted': { 'outline-style': 'dotted' }, 'outline-double': { 'outline-style': 'double' },
             'outline-none': { 'outline': '2px solid transparent', 'outline-offset': '2px' },
@@ -270,6 +263,7 @@
             'auto-cols-auto': { 'grid-auto-columns': 'auto' }, 'auto-cols-min': { 'grid-auto-columns': 'min-content' }, 'auto-cols-max': { 'grid-auto-columns': 'max-content' }, 'auto-cols-fr': { 'grid-auto-columns': 'minmax(0, 1fr)' },
             'auto-rows-auto': { 'grid-auto-rows': 'auto' }, 'auto-rows-min': { 'grid-auto-rows': 'min-content' }, 'auto-rows-max': { 'grid-auto-rows': 'max-content' }, 'auto-rows-fr': { 'grid-auto-rows': 'minmax(0, 1fr)' },
             ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`gap-${k}`, { 'column-gap': v, 'row-gap': v }])), ...genSpacing('gap-x', 'column-gap'), ...genSpacing('gap-y', 'row-gap'),
+            ...genSpacing('space-y', 'row-gap'), ...genSpacing('space-x', 'column-gap'),
             'justify-normal': {'justify-content': 'normal'}, 'justify-start': { 'justify-content': 'flex-start' }, 'justify-end': { 'justify-content': 'flex-end' }, 'justify-center': { 'justify-content': 'center' }, 'justify-between': { 'justify-content': 'space-between' }, 'justify-around': { 'justify-content': 'space-around' }, 'justify-evenly': { 'justify-content': 'space-evenly' }, 'justify-stretch': { 'justify-content': 'stretch' },
             'justify-items-start': { 'justify-items': 'start' }, 'justify-items-end': { 'justify-items': 'end' }, 'justify-items-center': { 'justify-items': 'center' }, 'justify-items-stretch': { 'justify-items': 'stretch' },
             'justify-self-auto': { 'justify-self': 'auto' }, 'justify-self-start': { 'justify-self': 'start' }, 'justify-self-end': { 'justify-self': 'end' }, 'justify-self-center': { 'justify-self': 'center' }, 'justify-self-stretch': { 'justify-self': 'stretch' },
@@ -285,8 +279,6 @@
             ...genSpacing('m', 'margin'), ...genXYSpacing('mx', 'margin-left', 'margin-right'), ...genXYSpacing('my', 'margin-top', 'margin-bottom'), ...genSpacing('mt', 'margin-top'), ...genSpacing('mr', 'margin-right'), ...genSpacing('mb', 'margin-bottom'), ...genSpacing('ml', 'margin-left'),
             ...genNegativeMargin('m', 'margin'), ...genNegativeMargin('mx', 'margin-left', 'margin-right'), ...genNegativeMargin('my', 'margin-top', 'margin-bottom'), ...genNegativeMargin('mt', 'margin-top'), ...genNegativeMargin('mr', 'margin-right'), ...genNegativeMargin('mb', 'margin-bottom'), ...genNegativeMargin('ml', 'margin-left'),
             'mx-auto': { 'margin-left': 'auto', 'margin-right': 'auto' },
-            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`space-x-${k}`, {'--tw-space-x-reverse': '0', 'margin-right': `calc(${v} * var(--tw-space-x-reverse))`, 'margin-left': `calc(${v} * calc(1 - var(--tw-space-x-reverse)))` }])),
-            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`space-y-${k}`, {'--tw-space-y-reverse': '0', 'margin-top': `calc(${v} * calc(1 - var(--tw-space-y-reverse)))`, 'margin-bottom': `calc(${v} * var(--tw-space-y-reverse))` }])),
 
             // --- Sizing ---
             ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`w-${k}`, { width: v }])), 'w-auto': { 'width': 'auto' }, 'w-1/2': { 'width': '50%' }, 'w-1/3': { 'width': '33.333333%' }, 'w-2/3': { 'width': '66.666667%' }, 'w-1/4': { 'width': '25%' }, 'w-2/4': { 'width': '50%' }, 'w-3/4': { 'width': '75%' }, 'w-1/5': { 'width': '20%' }, 'w-2/5': { 'width': '40%' }, 'w-3/5': { 'width': '60%' }, 'w-4/5': { 'width': '80%' }, 'w-1/6': { 'width': '16.666667%' }, 'w-5/6': { 'width': '83.333333%' }, 'w-full': { 'width': '100%' }, 'w-screen': { 'width': '100vw' }, 'w-min': { 'width': 'min-content' }, 'w-max': { 'width': 'max-content' }, 'w-fit': { 'width': 'fit-content' },
@@ -368,11 +360,6 @@
             'will-change-auto': { 'will-change': 'auto' }, 'will-change-scroll': { 'will-change': 'scroll-position' }, 'will-change-contents': { 'will-change': 'contents' }, 'will-change-transform': { 'will-change': 'transform' },
         };
         
-        const sampleHtml = `<!-- Background gradient shapes -->
-<div class="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80" aria-hidden="true">
-    <div class="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" style="clip-path: polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)"></div>
-</div>`;
-        
         const htmlInput = document.getElementById('html-input');
         const jsonOutput = document.getElementById('json-output');
         const outputPlaceholder = document.getElementById('output-placeholder');
@@ -442,16 +429,16 @@
                 if (via) stops.push(via);
                 
                 // If there's a 'from' but no 'to', Tailwind creates a fade-to-transparent effect.
-                // We simplify this by just using the 'to' color if it exists.
                 if (to) {
                     stops.push(to);
+                } else if (from && !to) {
+                     stops.push('rgba(255,255,255,0)');
                 }
 
                 if (stops.length > 0) {
                     styleObject['background-image'] = styleObject['background-image']
                         .replace('var(--tw-gradient-stops)', stops.join(', '));
                 } else {
-                    // If no color stops were found (e.g., only `bg-gradient-to-r`), remove the property.
                     delete styleObject['background-image'];
                 }
             }
@@ -568,8 +555,44 @@
 
             return { style, variants };
         }
+        
+        /**
+         * Parses the content of <style> tags to find component classes with @apply.
+         * @param {string} htmlString - The full HTML input string.
+         * @returns {object} A map of component class names to their Tailwind utility strings.
+         */
+        const parseStyleTag = (htmlString) => {
+            const componentClassMap = {};
+            const styleRegex = /<style[^>]*>([\s\S]*?)<\/style>/g;
+            const classRegex = /\.([\w-]+)\s*\{\s*@apply\s+([^;]+);/g;
+            
+            let styleMatch;
+            while ((styleMatch = styleRegex.exec(htmlString)) !== null) {
+                const styleContent = styleMatch[1];
+                let classMatch;
+                while((classMatch = classRegex.exec(styleContent)) !== null) {
+                    const className = classMatch[1];
+                    const utilities = classMatch[2].trim().replace(/\s+/g, ' ');
+                    componentClassMap[className] = utilities;
+                }
+            }
+            return componentClassMap;
+        };
 
-        function processNode(domNode, nodes) {
+        /**
+         * Expands a class string by replacing component classes with their utility strings.
+         * @param {string} classString - The class string from the HTML element.
+         * @param {object} componentMap - The map of component classes to utilities.
+         * @returns {string} The expanded string of utility classes.
+         */
+        const expandClasses = (classString, componentMap) => {
+            if (!classString) return '';
+            const classes = classString.split(/\s+/);
+            const expanded = classes.map(cls => componentMap[cls] || cls);
+            return expanded.join(' ');
+        };
+
+        function processNode(domNode, nodes, componentClassMap) {
             if ((domNode.nodeType === 3 && !domNode.nodeValue.trim()) || domNode.nodeType === 8 || domNode.tagName?.toLowerCase() === 'style' || domNode.tagName?.toLowerCase() === 'script') {
                 return null;
             }
@@ -583,22 +606,29 @@
                     ? domNode.className.baseVal
                     : domNode.className;
 
-                const { style, variants } = parseTailwind(classNameString || '');
+                const expandedClassString = expandClasses(classNameString, componentClassMap);
+                const { style, variants } = parseTailwind(expandedClassString);
                 
-                // --- Default Style Logic ---
+                const tableDisplayMap = {
+                    'table': 'table', 'thead': 'table-header-group', 'tbody': 'table-row-group',
+                    'tfoot': 'table-footer-group', 'tr': 'table-row', 'th': 'table-cell',
+                    'td': 'table-cell', 'caption': 'table-caption'
+                };
+
                 const finalStyle = {
                     'border-style': 'solid',
                     'border-width': '0',
                     ...style
                 };
-
-                // Case 1: No display class is present. Default to flex-column.
+                
                 if (!style.display) {
-                    finalStyle.display = 'flex';
-                    finalStyle['flex-direction'] = 'column';
-                } 
-                // Case 2: A flex class is present, but no direction is specified. Default to row (standard CSS behavior).
-                else if (style.display.includes('flex') && !style['flex-direction']) {
+                    if (tableDisplayMap[tagName]) {
+                         finalStyle.display = tableDisplayMap[tagName];
+                    } else {
+                        finalStyle.display = 'flex';
+                        finalStyle['flex-direction'] = 'column';
+                    }
+                } else if (style.display.includes('flex') && !style['flex-direction']) {
                     finalStyle['flex-direction'] = 'row';
                 }
                 
@@ -629,7 +659,7 @@
                 }
                 
                 for (const child of domNode.childNodes) {
-                    const childId = processNode(child, nodes);
+                    const childId = processNode(child, nodes, componentClassMap);
                     if (childId) nodeData.children.push(childId);
                 }
 
@@ -653,6 +683,8 @@
             }
 
             try {
+                const componentClassMap = parseStyleTag(html);
+                
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
                 
@@ -663,7 +695,7 @@
                 } else {
                      const tempWrapper = document.createElement('div');
                      Array.from(doc.body.childNodes).forEach(child => {
-                         if (child.nodeType !== 8 && child.tagName?.toLowerCase() !== 'script') {
+                         if (child.nodeType !== 8 && !['style', 'script'].includes(child.tagName?.toLowerCase())) {
                              tempWrapper.appendChild(child.cloneNode(true));
                          }
                      });
@@ -671,7 +703,7 @@
                 }
 
                 const nodes = {};
-                const rootId = processNode(rootElement, nodes);
+                const rootId = processNode(rootElement, nodes, componentClassMap);
                 
                 if (rootId) {
                     const rootNodeData = nodes[rootId];
