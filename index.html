@@ -368,6 +368,11 @@
             'will-change-auto': { 'will-change': 'auto' }, 'will-change-scroll': { 'will-change': 'scroll-position' }, 'will-change-contents': { 'will-change': 'contents' }, 'will-change-transform': { 'will-change': 'transform' },
         };
         
+        const sampleHtml = `<!-- Background gradient shapes -->
+<div class="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80" aria-hidden="true">
+    <div class="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" style="clip-path: polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)"></div>
+</div>`;
+        
         const htmlInput = document.getElementById('html-input');
         const jsonOutput = document.getElementById('json-output');
         const outputPlaceholder = document.getElementById('output-placeholder');
@@ -419,6 +424,56 @@
             'dark': 'dark'
         };
 
+        /**
+         * A helper function that runs after initial parsing to compose complex utilities
+         * like gradients and conditionally apply others like gaps.
+         * @param {object} styleObject - The style object to process.
+         * @param {object} baseStyleContext - The base style of the element, for context.
+         */
+        const postProcessStyle = (styleObject, baseStyleContext) => {
+            // --- Compose Gradients ---
+            if (styleObject['background-image'] && styleObject['background-image'].includes('var(--tw-gradient-stops)')) {
+                const from = styleObject['--tw-gradient-from-color'];
+                const via = styleObject['--tw-gradient-via-color'];
+                const to = styleObject['--tw-gradient-to-color'];
+                
+                let stops = [];
+                if (from) stops.push(from);
+                if (via) stops.push(via);
+                
+                // If there's a 'from' but no 'to', Tailwind creates a fade-to-transparent effect.
+                // We simplify this by just using the 'to' color if it exists.
+                if (to) {
+                    stops.push(to);
+                }
+
+                if (stops.length > 0) {
+                    styleObject['background-image'] = styleObject['background-image']
+                        .replace('var(--tw-gradient-stops)', stops.join(', '));
+                } else {
+                    // If no color stops were found (e.g., only `bg-gradient-to-r`), remove the property.
+                    delete styleObject['background-image'];
+                }
+            }
+            // Clean up temporary gradient color properties regardless.
+            delete styleObject['--tw-gradient-from-color'];
+            delete styleObject['--tw-gradient-via-color'];
+            delete styleObject['--tw-gradient-to-color'];
+
+            // --- Clean Gaps ---
+            const hasGap = 'column-gap' in styleObject || 'row-gap' in styleObject;
+            if (hasGap) {
+                const effectiveDisplay = styleObject.display || baseStyleContext.display;
+                const isFlexOrGrid = effectiveDisplay && (effectiveDisplay.includes('flex') || effectiveDisplay.includes('grid'));
+                
+                if (!isFlexOrGrid) {
+                    delete styleObject['column-gap'];
+                    delete styleObject['row-gap'];
+                }
+            }
+        };
+
+
         function parseTailwind(classString) {
             const style = {};
             let variants = [];
@@ -459,10 +514,17 @@
                      const match = baseClass.match(arbitraryValueRegex);
                      if (match) {
                          const prop = match[1];
-                         const value = match[2].replace(/_/g, ' ');
-                         const cssPropMap = { 'bg': 'background-color', 'w': 'width', 'h': 'height', 'p': 'padding', 'm': 'margin', 'text': 'color', 'border': 'border-color' };
-                         const cssProp = cssPropMap[prop] || prop;
-                         css[cssProp] = value;
+                         let value = match[2].replace(/_/g, ' ');
+
+                         // Handle arbitrary colors for gradients
+                         const gradientPropMap = {'from': '--tw-gradient-from-color', 'via': '--tw-gradient-via-color', 'to': '--tw-gradient-to-color'};
+                         if (gradientPropMap[prop]) {
+                            css[gradientPropMap[prop]] = value;
+                         } else {
+                            const cssPropMap = { 'bg': 'background-color', 'w': 'width', 'h': 'height', 'p': 'padding', 'm': 'margin', 'text': 'color', 'border': 'border-color' };
+                            const cssProp = cssPropMap[prop] || prop;
+                            css[cssProp] = value;
+                         }
                      } else if (tailwindMap[baseClass]) {
                          css = { ...tailwindMap[baseClass] };
                      } else {
@@ -499,23 +561,9 @@
                 variants.push(variant);
             }
 
-            // --- Post-processing to ensure gap is only applied to flex/grid containers ---
-            const cleanGaps = (styleObject, baseStyleContext = {}) => {
-                const hasGap = 'column-gap' in styleObject || 'row-gap' in styleObject;
-                if (!hasGap) return;
-
-                const effectiveDisplay = styleObject.display || baseStyleContext.display;
-                const isFlexOrGrid = effectiveDisplay && (effectiveDisplay.includes('flex') || effectiveDisplay.includes('grid'));
-                
-                if (!isFlexOrGrid) {
-                    delete styleObject['column-gap'];
-                    delete styleObject['row-gap'];
-                }
-            };
-
-            cleanGaps(style, style); 
+            postProcessStyle(style, style);
             variants.forEach(variant => {
-                cleanGaps(variant.style, style);
+                postProcessStyle(variant.style, style);
             });
 
             return { style, variants };
