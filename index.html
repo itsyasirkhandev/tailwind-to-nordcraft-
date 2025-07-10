@@ -121,6 +121,7 @@
             'accent': 'accent-color', 'caret': 'caret-color', 'fill': 'fill', 'stroke': 'stroke',
             'decoration': 'text-decoration-color',
             'from': '--tw-gradient-from', 'via': '--tw-gradient-stops', 'to': '--tw-gradient-to',
+            'divide': 'border-color'
         };
         for (const colorName in colors) {
             for (const shade in colors[colorName]) {
@@ -145,6 +146,37 @@
             'sr-only': { position: 'absolute', width: '1px', height: '1px', padding: '0', margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', 'white-space': 'nowrap', 'border-width': '0' },
 
             // --- Layout ---
+            // Column count classes (example for 12 columns)
+            ...Object.fromEntries(Array.from({ length: 13 }, (_, i) => i + 1).map(i => [`columns-${i}`, { 'columns': `${i}` }])),
+            // Column span classes (example for 12 spans)
+            ...Object.fromEntries(Array.from({ length: 13 }, (_, i) => i > 0 ? [`col-span-${i}`, { 'grid-column': `span ${i} / span ${i}` }] : [])), 'col-span-full': { 'grid-column': '1 / -1' },
+            // Column start/end classes (example for 14 start/end positions)
+            ...Object.fromEntries(Array.from({ length: 14 }, (_, i) => i > 0 ? [`col-start-${i}`, { 'grid-column-start': i }] : [])), 'col-start-auto': { 'grid-column-start': 'auto' },
+            ...Object.fromEntries(Array.from({ length: 14 }, (_, i) => i > 0 ? [`col-end-${i}`, { 'grid-column-end': i }] : [])), 'col-end-auto': { 'grid-column-end': 'auto' },
+            // Row span classes (example for 13 spans)
+            ...Object.fromEntries(Array.from({ length: 13 }, (_, i) => i > 0 ? [`row-span-${i}`, { 'grid-row': `span ${i} / span ${i}` }] : [])), 'row-span-full': { 'grid-row': '1 / -1' },
+            // Row start/end classes (example for 14 start/end positions)
+            ...Object.fromEntries(Array.from({ length: 14 }, (_, i) => i > 0 ? [`row-start-${i}`, { 'grid-row-start': i }] : [])), 'row-start-auto': { 'grid-row-start': 'auto' },
+            ...Object.fromEntries(Array.from({ length: 14 }, (_, i) => i > 0 ? [`row-end-${i}`, { 'grid-row-end': i }] : [])), 'row-end-auto': { 'grid-row-end': 'auto' },
+            // Grid auto-columns and auto-rows
+            'auto-cols-auto': { 'grid-auto-columns': 'auto' }, 'auto-cols-min': { 'grid-auto-columns': 'min-content' }, 'auto-cols-max': { 'grid-auto-columns': 'max-content' }, 'auto-cols-fr': { 'grid-auto-columns': 'minmax(0, 1fr)' },
+            'auto-rows-auto': { 'grid-auto-rows': 'auto' }, 'auto-rows-min': { 'grid-auto-rows': 'min-content' }, 'auto-rows-max': { 'grid-auto-rows': 'max-content' }, 'auto-rows-fr': { 'grid-auto-rows': 'minmax(0, 1fr)' },
+            // Gap classes
+            ...genSpacing('gap', 'gap'), ...genSpacing('gap-x', 'column-gap'), ...genSpacing('gap-y', 'row-gap'),
+            // Justify content and items
+            'justify-normal': {'justify-content': 'normal'}, 'justify-start': { 'justify-content': 'flex-start' }, 'justify-end': { 'justify-content': 'flex-end' }, 'justify-center': { 'justify-content': 'center' }, 'justify-between': { 'justify-content': 'space-between' }, 'justify-around': { 'justify-content': 'space-around' }, 'justify-evenly': { 'justify-content': 'space-evenly' }, 'justify-stretch': { 'justify-content': 'stretch' },
+            'justify-items-start': { 'justify-items': 'start' }, 'justify-items-end': { 'justify-items': 'end' }, 'justify-items-center': { 'justify-items': 'center' }, 'justify-items-stretch': { 'justify-items': 'stretch' },
+            // Justify self
+            'justify-self-auto': { 'justify-self': 'auto' }, 'justify-self-start': { 'justify-self': 'start' }, 'justify-self-end': { 'justify-self': 'end' }, 'justify-self-center': { 'justify-self': 'center' }, 'justify-self-stretch': { 'justify-self': 'stretch' },
+            // Align content, items, and self
+            'content-normal': {'align-content': 'normal'}, 'content-center': { 'align-content': 'center' }, 'content-start': { 'align-content': 'flex-start' }, 'content-end': { 'align-content': 'flex-end' }, 'content-between': { 'align-content': 'space-between' }, 'content-around': { 'align-content': 'space-around' }, 'content-evenly': { 'align-content': 'space-evenly' }, 'content-baseline': {'align-content': 'baseline'}, 'content-stretch': {'align-content': 'stretch'},
+            'items-start': { 'align-items': 'flex-start' }, 'items-end': { 'align-items': 'flex-end' }, 'items-center': { 'align-items': 'center' }, 'items-baseline': { 'align-items': 'baseline' }, 'items-stretch': { 'align-items': 'stretch' },
+            'self-auto': { 'align-self': 'auto' }, 'self-start': { 'align-self': 'flex-start' }, 'self-end': { 'align-self': 'flex-end' }, 'self-center': { 'align-self': 'center' }, 'self-stretch': { 'align-self': 'stretch' }, 'self-baseline': { 'align-self': 'baseline' },
+            // Place content and items
+            'place-content-center': { 'place-content': 'center' }, 'place-content-start': { 'place-content': 'start' }, 'place-content-end': { 'place-content': 'end' }, 'place-content-between': { 'place-content': 'space-between' }, 'place-content-around': { 'place-content': 'space-around' }, 'place-content-evenly': { 'place-content': 'space-evenly' }, 'place-content-baseline': {'place-content': 'baseline'}, 'place-content-stretch': { 'place-content': 'stretch' },
+            'place-items-start': { 'place-items': 'start' }, 'place-items-end': { 'place-items': 'end' }, 'place-items-center': { 'place-items': 'center' }, 'place-items-stretch': { 'place-items': 'stretch' },
+            'place-self-auto': { 'place-self': 'auto' }, 'place-self-start': { 'place-self': 'start' }, 'place-self-end': { 'place-self': 'end' }, 'place-self-center': { 'place-self': 'center' }, 'place-self-stretch': { 'place-self': 'stretch' },
+            // Other layout properties
             'box-decoration-slice': { 'box-decoration-break': 'slice' }, 'box-decoration-clone': { 'box-decoration-break': 'clone' },
             'box-border': { 'box-sizing': 'border-box' }, 'box-content': { 'box-sizing': 'content-box' },
             'block': { 'display': 'block' }, 'inline-block': { 'display': 'inline-block' }, 'inline': { 'display': 'inline' }, 'flex': { 'display': 'flex' }, 'inline-flex': { 'display': 'inline-flex' }, 'table': { 'display': 'table' }, 'inline-table': { 'display': 'inline-table' }, 'table-caption': { 'display': 'table-caption' }, 'table-cell': { 'display': 'table-cell' }, 'table-column': { 'display': 'table-column' }, 'table-column-group': { 'display': 'table-column-group' }, 'table-footer-group': { 'display': 'table-footer-group' }, 'table-header-group': { 'display': 'table-header-group' }, 'table-row-group': { 'display': 'table-row-group' }, 'table-row': { 'display': 'table-row' }, 'flow-root': { 'display': 'flow-root' }, 'grid': { 'display': 'grid' }, 'inline-grid': { 'display': 'inline-grid' }, 'contents': { 'display': 'contents' }, 'list-item': { 'display': 'list-item' }, 'hidden': { 'display': 'none' },
@@ -189,6 +221,11 @@
             ...genSpacing('m', 'margin'), ...genXYSpacing('mx', 'margin-left', 'margin-right'), ...genXYSpacing('my', 'margin-top', 'margin-bottom'), ...genSpacing('mt', 'margin-top'), ...genSpacing('mr', 'margin-right'), ...genSpacing('mb', 'margin-bottom'), ...genSpacing('ml', 'margin-left'),
             ...genNegativeMargin('m', 'margin'), ...genNegativeMargin('mx', 'margin-left', 'margin-right'), ...genNegativeMargin('my', 'margin-top', 'margin-bottom'), ...genNegativeMargin('mt', 'margin-top'), ...genNegativeMargin('mr', 'margin-right'), ...genNegativeMargin('mb', 'margin-bottom'), ...genNegativeMargin('ml', 'margin-left'),
             'mx-auto': { 'margin-left': 'auto', 'margin-right': 'auto' },
+            // Space between elements
+            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`space-x-${k}`, {'--tw-space-x-reverse': '0', 'margin-right': `calc(${v} * var(--tw-space-x-reverse))`, 'margin-left': `calc(${v} * calc(1 - var(--tw-space-x-reverse)))` }])),
+            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`space-y-${k}`, {'--tw-space-y-reverse': '0', 'margin-top': `calc(${v} * calc(1 - var(--tw-space-y-reverse)))`, 'margin-bottom': `calc(${v} * var(--tw-space-y-reverse))` }])),
+            '-space-x-1': { '--tw-space-x-reverse': '0', 'margin-right': `calc(0.25rem * var(--tw-space-x-reverse))`, 'margin-left': `calc(0.25rem * calc(1 - var(--tw-space-x-reverse)))` }, // Example for negative space
+            '-space-y-1': { '--tw-space-y-reverse': '0', 'margin-top': `calc(0.25rem * calc(1 - var(--tw-space-y-reverse)))`, 'margin-bottom': `calc(0.25rem * var(--tw-space-y-reverse))` }, // Example for negative space
 
             // --- Sizing ---
             ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`w-${k}`, { width: v }])), 'w-auto': { 'width': 'auto' }, 'w-1/2': { 'width': '50%' }, 'w-1/3': { 'width': '33.333333%' }, 'w-2/3': { 'width': '66.666667%' }, 'w-1/4': { 'width': '25%' }, 'w-2/4': { 'width': '50%' }, 'w-3/4': { 'width': '75%' }, 'w-1/5': { 'width': '20%' }, 'w-2/5': { 'width': '40%' }, 'w-3/5': { 'width': '60%' }, 'w-4/5': { 'width': '80%' }, 'w-1/6': { 'width': '16.666667%' }, 'w-5/6': { 'width': '83.333333%' }, 'w-full': { 'width': '100%' }, 'w-screen': { 'width': '100vw' }, 'w-min': { 'width': 'min-content' }, 'w-max': { 'width': 'max-content' }, 'w-fit': { 'width': 'fit-content' },
@@ -247,7 +284,11 @@
             ...Object.fromEntries([0, 1, 2, 4, 8].map(i => [`border-l-${i}`, { 'border-left-width': `${i}px` }])), 'border-l': { 'border-left-width': '1px' },
             'border-solid': { 'border-style': 'solid' }, 'border-dashed': { 'border-style': 'dashed' }, 'border-dotted': { 'border-style': 'dotted' }, 'border-double': { 'border-style': 'double' }, 'border-hidden': { 'border-style': 'hidden' }, 'border-none': { 'border-style': 'none' },
             'border-white': { 'border-color': '#ffffff' }, 'border-black': { 'border-color': '#000000' }, 'border-transparent': { 'border-color': 'transparent' },
-            
+            // Divide classes
+            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`divide-x-${k}`, { '--tw-divide-x-reverse': '0', 'border-right-width': `calc(${v} * var(--tw-divide-x-reverse))`, 'border-left-width': `calc(${v} * calc(1 - var(--tw-divide-x-reverse)))` }])),
+            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`divide-y-${k}`, { '--tw-divide-y-reverse': '0', 'border-top-width': `calc(${v} * calc(1 - var(--tw-divide-y-reverse)))`, 'border-bottom-width': `calc(${v} * var(--tw-divide-y-reverse))` }])),
+            ...Object.fromEntries(['solid', 'dashed', 'dotted', 'double', 'none'].map(s => [`divide-${s}`, { 'border-style': s }])),
+
             // --- Rings ---
             ...Object.fromEntries([0, 1, 2, 4, 8].map(i => [`ring-${i}`, { '--tw-ring-offset-shadow': `var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color)`, '--tw-ring-shadow': `var(--tw-ring-inset) 0 0 0 calc(${i}px + var(--tw-ring-offset-width)) var(--tw-ring-color)`, 'box-shadow': 'var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)', 'border-color': 'transparent' }])), 'ring': { '--tw-ring-offset-shadow': `var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color)`, '--tw-ring-shadow': `var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color)`, 'box-shadow': 'var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)', 'border-color': 'transparent' },
             'ring-inset': { '--tw-ring-inset': 'inset' },
@@ -313,9 +354,18 @@
     <span class="sr-only">Link to somewhere</span>
     Click Me
   </a>
-  <style>
-    .custom-class { color: hotpink; }
-  </style>
+  <div class="mt-4">
+    <p class="text-sm font-bold leading-tight text-gray-300 underline decoration-dotted decoration-2 underline-offset-2">This is some text.</p>
+  </div>
+  <div class="flex items-center justify-center space-x-4 mt-6">
+    <button class="bg-blue-600 px-3 py-1.5 rounded-md text-white font-medium text-sm hover:bg-blue-700 transition-colors">Button</button>
+    <span class="inline-flex items-center rounded-full bg-green-500/10 px-3 py-1 text-xs font-medium leading-4 text-green-400 ring-1 ring-inset ring-green-500/20">New</span>
+  </div>
+  <div class="grid grid-cols-3 gap-3 mt-6">
+    <div class="aspect-square bg-purple-500/10 rounded-xl flex items-center justify-center text-center text-xs text-purple-300 ring-1 ring-purple-500/20">Box 1</div>
+    <div class="aspect-square bg-rose-500/10 rounded-xl flex items-center justify-center text-center text-xs text-rose-300 ring-1 ring-rose-500/20">Box 2</div>
+    <div class="aspect-square bg-amber-500/10 rounded-xl flex items-center justify-center text-center text-xs text-amber-300 ring-1 ring-amber-500/20">Box 3</div>
+  </div>
 </body>`;
         
         const htmlInput = document.getElementById('html-input');
@@ -343,7 +393,7 @@
             c = '0x' + c.join('');
             return `rgba(${[(c>>16)&255, (c>>8)&255, c&255].join(',')},${alpha})`;
         }
-        
+
         function parseTailwind(classString) {
             const style = {};
             const variants = [];
@@ -387,12 +437,14 @@
                      if (match) {
                         const prop = match[1];
                         const value = match[2].replace(/_/g, ' ');
-                        const cssPropMap = { 'bg': 'background-color', 'w': 'width', 'h': 'height', 'p': 'padding', 'm': 'margin', 'text': 'color', 'border': 'border-color' };
-                        const cssProp = cssPropMap[prop] || prop;
+                        // Map common prefixes to CSS properties. If not found, assume it's a direct CSS property.
+                        const cssPropMap = { 'bg': 'background-color', 'w': 'width', 'h': 'height', 'p': 'padding', 'm': 'margin', 'text': 'color', 'border': 'border-color', 'rounded': 'border-radius', 'shadow': 'box-shadow', 'font': 'font-weight', 'leading': 'line-height', 'tracking': 'letter-spacing', 'resize': 'resize', 'select': 'user-select', 'text-opacity': 'color', 'bg-opacity': 'background-color', 'decoration': 'text-decoration-thickness', 'underline-offset': 'text-underline-offset', 'divide': 'border-width' };
+                        const cssProp = cssPropMap[prop] || prop; // Use mapped prop or the prop itself
                         css[cssProp] = value;
                     } else if (tailwindMap[baseClass]) {
                         css = { ...tailwindMap[baseClass] };
                     } else {
+                        // If the class is not found in the map and not an arbitrary value, skip it.
                         continue; 
                     }
                 }
@@ -400,7 +452,12 @@
                 if (Object.keys(css).length === 0) continue;
 
                 if (isImportant) {
-                    Object.keys(css).forEach(key => css[key] = `${css[key]} !important`);
+                    Object.keys(css).forEach(key => {
+                        // Ensure not to double-apply !important if it's already there (e.g., from previous processing)
+                        if (!String(css[key]).endsWith('!important')) {
+                            css[key] = `${css[key]} !important`;
+                        }
+                    });
                 }
 
                 if (!variantKey) {
@@ -428,7 +485,8 @@
         }
 
         function processNode(domNode, nodes) {
-            if ((domNode.nodeType === 3 && !domNode.nodeValue.trim()) || domNode.nodeType === 8) {
+            // Skip empty text nodes, comment nodes, and script tags that we don't want to include in the JSON structure
+            if ((domNode.nodeType === 3 && !domNode.nodeValue.trim()) || domNode.nodeType === 8 || (domNode.nodeType === 1 && domNode.tagName?.toLowerCase() === 'script')) {
                 return null;
             }
 
@@ -437,18 +495,19 @@
             const tagName = domNode.tagName ? domNode.tagName.toLowerCase() : null;
 
             if (domNode.nodeType === 1) { // Element node
-                // Handle <style> tag separately
+                // Handle <style> tag specifically to capture its content
                 if (tagName === 'style') {
                     nodeData = {
                         type: 'element',
                         tag: 'style',
-                        attrs: {},
+                        attrs: {}, // Style tags don't usually have attributes we need to parse
                         children: []
                     };
                     const styleContent = domNode.innerHTML;
-                    if (styleContent) {
+                    if (styleContent.trim()) {
                         const textNodeId = crypto.randomUUID();
-                        nodes[textNodeId] = { type: 'text', value: { type: 'value', value: styleContent } };
+                        // Store the style content as a text node within the style element
+                        nodes[textNodeId] = { type: 'text', value: { type: 'value', value: styleContent.trim() } };
                         nodeData.children.push(textNodeId);
                     }
                     nodes[id] = nodeData;
@@ -461,34 +520,38 @@
 
                 const { style, variants } = parseTailwind(classNameString || '');
                 
-                const defaultStyles = { 'flex-direction': 'row', 'display': 'block', 'border-style': 'solid', 'border-width': '0' };
+                // Provide default styles that are common or implied by Tailwind's structure
+                const defaultStyles = { 'display': 'block', 'border-style': 'solid', 'border-width': '0' };
                 
                 nodeData = {
                     type: 'element',
-                    tag: tagName === 'body' ? 'div' : tagName, // Convert body to div
-                    classes: {},
+                    tag: tagName === 'body' ? 'div' : tagName, // Treat 'body' tag as a 'div' for consistency
+                    classes: {}, // This could be populated if we wanted to store the raw class string, but it's redundant with `style` and `variants`
                     attrs: {},
-                    events: {},
-                    style: {...defaultStyles, ...style},
-                    styleVariables: {},
+                    events: {}, // Placeholder for event handlers if needed later
+                    style: {...defaultStyles, ...style}, // Merge defaults with parsed styles
+                    styleVariables: {}, // Placeholder for CSS variables if needed
                     variants: variants,
                     children: []
                 };
 
+                // Parse attributes, excluding 'class' and 'style' as they are handled separately
                 for (const attr of domNode.attributes) {
                     if (attr.name !== 'class' && attr.name !== 'style') {
                         nodeData.attrs[attr.name] = { type: 'value', value: attr.value };
                     }
                 }
                 
+                // Directly apply inline styles if they exist on the element
                 if (domNode.style && domNode.style.cssText) {
                     const inlineStyles = domNode.style.cssText.split(';').filter(s => s.trim());
                     inlineStyles.forEach(s => {
                         const [key, value] = s.split(':').map(p => p.trim());
-                        if (key && value) nodeData.style[key] = value;
+                        if (key && value) nodeData.style[key] = value; // Merge inline styles, potentially overwriting parsed ones if they conflict
                     });
                 }
                 
+                // Recursively process child nodes
                 for (const child of domNode.childNodes) {
                     const childId = processNode(child, nodes);
                     if (childId) nodeData.children.push(childId);
@@ -517,19 +580,42 @@
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
                 
-                // If the user pastes a full HTML document, start from body. Otherwise, create a wrapper.
-                let rootElement = doc.body;
-                if (!doc.body.firstElementChild && doc.head.firstElementChild) {
-                    // Handle case where content is in head
-                    rootElement = doc.head;
-                } else if (doc.body.children.length === 1 && doc.body.firstElementChild.tagName !== 'STYLE' && doc.body.firstElementChild.tagName !== 'SCRIPT') {
-                    // If there's a single element in the body, use it as the root
-                    rootElement = doc.body.firstElementChild;
-                } else {
-                    // Otherwise, process the whole body as a fragment
+                let rootElement = null;
+
+                // Determine the root element to process.
+                // This handles cases where the input might be a fragment, a full HTML document, or just a body content.
+                if (doc.body && doc.body.childNodes.length > 0) {
+                    // If the body contains multiple elements or text nodes, use the body itself as the root fragment.
+                    // If it contains a single element (and not a script/style), use that element as root.
+                    let childNodesToProcess = Array.from(doc.body.childNodes);
+                    
+                    // If there's only one child and it's an element, consider it the primary root
+                    if (childNodesToProcess.length === 1 && childNodesToProcess[0].nodeType === 1) {
+                        rootElement = childNodesToProcess[0];
+                    } else {
+                        // Otherwise, create a temporary wrapper to hold all body content
+                        const tempWrapper = document.createElement('div');
+                        childNodesToProcess.forEach(child => {
+                            // Clone nodes to avoid modifying the original parsed document structure if it's used elsewhere
+                            tempWrapper.appendChild(child.cloneNode(true));
+                        });
+                        rootElement = tempWrapper;
+                    }
+                } else if (doc.head && doc.head.childNodes.length > 0) {
+                     // Fallback to head if body is empty but head has content (rare case for fragments)
                     const tempWrapper = document.createElement('div');
-                    Array.from(doc.body.childNodes).forEach(child => tempWrapper.appendChild(child.cloneNode(true)));
+                    Array.from(doc.head.childNodes).forEach(child => {
+                         // Only process element nodes and text nodes from head, skip script/style tags directly
+                        if (child.nodeType === 1 && !['SCRIPT', 'STYLE'].includes(child.tagName?.toUpperCase())) {
+                             tempWrapper.appendChild(child.cloneNode(true));
+                        } else if (child.nodeType === 3) {
+                            tempWrapper.appendChild(child.cloneNode(true));
+                        }
+                    });
                     rootElement = tempWrapper;
+                } else {
+                    // If even head is empty, create a simple div
+                    rootElement = document.createElement('div');
                 }
 
                 const nodes = {};
@@ -537,8 +623,11 @@
                 
                 if (rootId) {
                     const rootNodeData = nodes[rootId];
-                    delete nodes[rootId];
-                    nodes['root'] = rootNodeData;
+                    delete nodes[rootId]; // Remove the temporary root from the 'nodes' map
+                    nodes['root'] = rootNodeData; // Assign the main processed element to the 'root' key
+                } else {
+                    // If no root element was processed (e.g., input was just whitespace or comments)
+                    nodes['root'] = { type: 'element', tag: 'div', children: [] };
                 }
 
                 const finalJson = { type: 'nodes', nodes: nodes };
@@ -551,23 +640,25 @@
                 outputPlaceholder.style.display = 'none';
             }
         }
-        
+
         function showToast(message, type = 'success') {
             toastMessage.textContent = message;
             toast.classList.remove('opacity-0');
-            toast.className = toast.className.replace(/bg-(red|gray)-[0-9]+/g, '');
+            // Clear previous background colors and apply the new one based on type
+            toast.className = toast.className.replace(/\bbg-(red|gray)-\d00\b/g, '');
             toast.classList.add(type === 'error' ? 'bg-red-600' : 'bg-gray-800');
+            // Show the toast for a few seconds
             setTimeout(() => toast.classList.add('opacity-0'), 2500);
         }
 
         // --- Event Listeners ---
         convertBtn.addEventListener('click', convert);
-        
+
         pasteSampleBtn.addEventListener('click', () => {
             htmlInput.value = sampleHtml;
             convert();
         });
-        
+
         pasteFromClipboardBtn.addEventListener('click', async () => {
             try {
                 const text = await navigator.clipboard.readText();
@@ -594,8 +685,8 @@
                 });
             }
         });
-        
-        // Initial conversion on load
+
+        // Initial conversion on load to display the sample data
         pasteSampleBtn.click();
     </script>
 </body>
