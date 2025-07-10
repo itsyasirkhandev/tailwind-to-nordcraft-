@@ -141,6 +141,9 @@
         const tailwindMap = {
             ...generatedColorUtilities,
 
+            // --- Accessibility ---
+            'sr-only': { position: 'absolute', width: '1px', height: '1px', padding: '0', margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', 'white-space': 'nowrap', 'border-width': '0' },
+
             // --- Layout ---
             'box-decoration-slice': { 'box-decoration-break': 'slice' }, 'box-decoration-clone': { 'box-decoration-break': 'clone' },
             'box-border': { 'box-sizing': 'border-box' }, 'box-content': { 'box-sizing': 'content-box' },
@@ -194,7 +197,7 @@
             ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`h-${k}`, { height: v }])), 'h-auto': { 'height': 'auto' }, 'h-1/2': { 'height': '50%' }, 'h-1/3': { 'height': '33.333333%' }, 'h-2/3': { 'height': '66.666667%' }, 'h-1/4': { 'height': '25%' }, 'h-2/4': { 'height': '50%' }, 'h-3/4': { 'height': '75%' }, 'h-1/5': { 'height': '20%' }, 'h-2/5': { 'height': '40%' }, 'h-3/5': { 'height': '60%' }, 'h-4/5': { 'height': '80%' }, 'h-1/6': { 'height': '16.666667%' }, 'h-5/6': { 'height': '83.333333%' }, 'h-full': { 'height': '100%' }, 'h-screen': { 'height': '100vh' }, 'h-min': { 'height': 'min-content' }, 'h-max': { 'height': 'max-content' }, 'h-fit': { 'height': 'fit-content' },
             'min-h-0': { 'min-height': '0px' }, 'min-h-full': { 'min-height': '100%' }, 'min-h-screen': { 'min-height': '100vh' }, 'min-h-min': { 'min-height': 'min-content' }, 'min-h-max': { 'min-height': 'max-content' }, 'min-h-fit': { 'min-height': 'fit-content' },
             'max-h-0': { 'max-height': '0px' }, ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`max-h-${k}`, { 'max-height': v }])), 'max-h-full': { 'max-height': '100%' }, 'max-h-screen': { 'max-height': '100vh' }, 'max-h-min': { 'max-height': 'min-content' }, 'max-h-max': { 'max-height': 'max-content' }, 'max-h-fit': { 'max-height': 'fit-content' },
-            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`size-${k}`, { width: v, height: v }])), // NEW: size-* utilities
+            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`size-${k}`, { width: v, height: v }])),
             
             // --- Typography ---
             'font-sans': { 'font-family': 'ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }, 'font-serif': { 'font-family': 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }, 'font-mono': { 'font-family': 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace' },
@@ -213,7 +216,7 @@
             ...Object.fromEntries([0,1,2,4,8].map(i => [`underline-offset-${i}`, {'text-underline-offset': `${i}px`}])), 'underline-offset-auto': { 'text-underline-offset': 'auto' },
             'uppercase': { 'text-transform': 'uppercase' }, 'lowercase': { 'text-transform': 'lowercase' }, 'capitalize': { 'text-transform': 'capitalize' }, 'normal-case': { 'text-transform': 'none' },
             'truncate': { 'overflow': 'hidden', 'text-overflow': 'ellipsis', 'white-space': 'nowrap' }, 'text-ellipsis': { 'text-overflow': 'ellipsis' }, 'text-clip': { 'text-overflow': 'clip' },
-            'text-wrap': { 'text-wrap': 'wrap' }, 'text-nowrap': { 'text-wrap': 'nowrap' }, 'text-balance': { 'text-wrap': 'balance' }, // NEW: text-wrap
+            'text-wrap': { 'text-wrap': 'wrap' }, 'text-nowrap': { 'text-wrap': 'nowrap' }, 'text-balance': { 'text-wrap': 'balance' },
             'indent-px': {'text-indent': '1px'}, ...genSpacing('indent', 'text-indent'),
             'align-baseline': { 'vertical-align': 'baseline' }, 'align-top': { 'vertical-align': 'top' }, 'align-middle': { 'vertical-align': 'middle' }, 'align-bottom': { 'vertical-align': 'bottom' }, 'align-text-top': { 'vertical-align': 'text-top' }, 'align-text-bottom': { 'vertical-align': 'text-bottom' }, 'align-sub': { 'vertical-align': 'sub' }, 'align-super': { 'vertical-align': 'super' },
             'whitespace-normal': { 'white-space': 'normal' }, 'whitespace-nowrap': { 'white-space': 'nowrap' }, 'whitespace-pre': { 'white-space': 'pre' }, 'whitespace-pre-line': { 'white-space': 'pre-line' }, 'whitespace-pre-wrap': { 'white-space': 'pre-wrap' }, 'whitespace-break-spaces': {'white-space': 'break-spaces'},
@@ -231,11 +234,24 @@
             'bg-white': { 'background-color': '#ffffff' }, 'bg-black': { 'background-color': '#000000' }, 'bg-transparent': { 'background-color': 'transparent' },
 
             // --- Borders ---
-            ...Object.fromEntries(['', '-sm', '-md', '-lg', '-xl', '-2xl', '-3xl'].map(s => [`rounded${s}`, { 'border-radius': { '': '0.25rem', '-sm': '0.125rem', '-md': '0.375rem', '-lg': '0.5rem', '-xl': '0.75rem', '-2xl': '1rem', '-3xl': '1.5rem' }[s] }])), 'rounded-none': { 'border-radius': '0px' }, 'rounded-full': { 'border-radius': '9999px' },
-            ...Object.fromEntries([0, 2, 4, 8].map(i => [`border-${i}`, { 'border-width': `${i}px` }])), 'border': { 'border-width': '1px' }, 'border-x': { 'border-left-width': '1px', 'border-right-width': '1px' }, 'border-y': { 'border-top-width': '1px', 'border-bottom-width': '1px' }, 'border-t': { 'border-top-width': '1px' }, 'border-r': { 'border-right-width': '1px' }, 'border-b': { 'border-bottom-width': '1px' }, 'border-l': { 'border-left-width': '1px' },
+            ...Object.fromEntries(['', '-sm', '-md', '-lg', '-xl', '-2xl', '-3xl', '-full'].map(s => {
+                const size = { '': '0.25rem', '-sm': '0.125rem', '-md': '0.375rem', '-lg': '0.5rem', '-xl': '0.75rem', '-2xl': '1rem', '-3xl': '1.5rem', '-full': '9999px' }[s];
+                return [`rounded${s}`, { 'border-radius': size }];
+            })), 'rounded-none': { 'border-radius': '0px' },
+            ...Object.fromEntries([0, 1, 2, 4, 8].map(i => [`border-${i}`, { 'border-width': `${i}px` }])), 'border': { 'border-width': '1px' }, 'border-px': { 'border-width': '1px' },
+            ...Object.fromEntries([0, 1, 2, 4, 8].map(i => [`border-x-${i}`, { 'border-left-width': `${i}px`, 'border-right-width': `${i}px` }])), 'border-x': { 'border-left-width': '1px', 'border-right-width': '1px' },
+            ...Object.fromEntries([0, 1, 2, 4, 8].map(i => [`border-y-${i}`, { 'border-top-width': `${i}px`, 'border-bottom-width': `${i}px` }])), 'border-y': { 'border-top-width': '1px', 'border-bottom-width': '1px' },
+            ...Object.fromEntries([0, 1, 2, 4, 8].map(i => [`border-t-${i}`, { 'border-top-width': `${i}px` }])), 'border-t': { 'border-top-width': '1px' },
+            ...Object.fromEntries([0, 1, 2, 4, 8].map(i => [`border-r-${i}`, { 'border-right-width': `${i}px` }])), 'border-r': { 'border-right-width': '1px' },
+            ...Object.fromEntries([0, 1, 2, 4, 8].map(i => [`border-b-${i}`, { 'border-bottom-width': `${i}px` }])), 'border-b': { 'border-bottom-width': '1px' },
+            ...Object.fromEntries([0, 1, 2, 4, 8].map(i => [`border-l-${i}`, { 'border-left-width': `${i}px` }])), 'border-l': { 'border-left-width': '1px' },
             'border-solid': { 'border-style': 'solid' }, 'border-dashed': { 'border-style': 'dashed' }, 'border-dotted': { 'border-style': 'dotted' }, 'border-double': { 'border-style': 'double' }, 'border-hidden': { 'border-style': 'hidden' }, 'border-none': { 'border-style': 'none' },
             'border-white': { 'border-color': '#ffffff' }, 'border-black': { 'border-color': '#000000' }, 'border-transparent': { 'border-color': 'transparent' },
-
+            
+            // --- Rings ---
+            ...Object.fromEntries([0, 1, 2, 4, 8].map(i => [`ring-${i}`, { '--tw-ring-offset-shadow': `var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color)`, '--tw-ring-shadow': `var(--tw-ring-inset) 0 0 0 calc(${i}px + var(--tw-ring-offset-width)) var(--tw-ring-color)`, 'box-shadow': 'var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)', 'border-color': 'transparent' }])), 'ring': { '--tw-ring-offset-shadow': `var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color)`, '--tw-ring-shadow': `var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color)`, 'box-shadow': 'var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)', 'border-color': 'transparent' },
+            'ring-inset': { '--tw-ring-inset': 'inset' },
+            
             // --- Effects ---
             'shadow-sm': { 'box-shadow': '0 1px 2px 0 rgb(0 0 0 / 0.05)' }, 'shadow': { 'box-shadow': '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)' }, 'shadow-md': { 'box-shadow': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }, 'shadow-lg': { 'box-shadow': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)' }, 'shadow-xl': { 'box-shadow': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)' }, 'shadow-2xl': { 'box-shadow': '0 25px 50px -12px rgb(0 0 0 / 0.25)' }, 'shadow-inner': { 'box-shadow': 'inset 0 2px 4px 0 rgb(0 0 0 / 0.05)' }, 'shadow-none': { 'box-shadow': 'none' },
             ...Object.fromEntries(Array.from({ length: 21 }, (_, i) => [i * 5, (i * 0.05).toFixed(2)]).map(([k, v]) => [`opacity-${k}`, { opacity: v }])),
@@ -272,7 +288,7 @@
             'origin-center': { 'transform-origin': 'center' }, 'origin-top': { 'transform-origin': 'top' }, 'origin-top-right': { 'transform-origin': 'top right' }, 'origin-right': { 'transform-origin': 'right' }, 'origin-bottom-right': { 'transform-origin': 'bottom right' }, 'origin-bottom': { 'transform-origin': 'bottom' }, 'origin-bottom-left': { 'transform-origin': 'bottom left' }, 'origin-left': { 'transform-origin': 'left' }, 'origin-top-left': { 'transform-origin': 'top left' },
             
             // --- Interactivity ---
-            'accent-auto': { 'accent-color': 'auto' }, // NEW: accent-color
+            'accent-auto': { 'accent-color': 'auto' },
             'appearance-none': { 'appearance': 'none' },
             'cursor-auto': { 'cursor': 'auto' }, 'cursor-default': { 'cursor': 'default' }, 'cursor-pointer': { 'cursor': 'pointer' }, 'cursor-wait': { 'cursor': 'wait' }, 'cursor-text': { 'cursor': 'text' }, 'cursor-move': { 'cursor': 'move' }, 'cursor-help': { 'cursor': 'help' }, 'cursor-not-allowed': { 'cursor': 'not-allowed' }, 'cursor-none': { 'cursor': 'none' }, 'cursor-context-menu': { 'cursor': 'context-menu' }, 'cursor-progress': { 'cursor': 'progress' }, 'cursor-cell': { 'cursor': 'cell' }, 'cursor-crosshair': { 'cursor': 'crosshair' }, 'cursor-vertical-text': { 'cursor': 'vertical-text' }, 'cursor-alias': { 'cursor': 'alias' }, 'cursor-copy': { 'cursor': 'copy' }, 'cursor-no-drop': { 'cursor': 'no-drop' }, 'cursor-grab': { 'cursor': 'grab' }, 'cursor-grabbing': { 'cursor': 'grabbing' },
             'pointer-events-none': { 'pointer-events': 'none' }, 'pointer-events-auto': { 'pointer-events': 'auto' },
@@ -292,26 +308,15 @@
             ...Object.fromEntries([0, 1, 2].map(i => [`stroke-${i}`, { 'stroke-width': i }])),
         };
 
-        const sampleHtml = `<div class="p-6 bg-slate-900 text-slate-200">
-    <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-        <div class="p-8 bg-slate-800 rounded-xl shadow-lg border border-slate-700">
-            <h2 class="text-3xl font-bold text-white mb-2">Nordcraft Ready</h2>
-            <p class="text-lg text-slate-400 mb-6">Enter HTML with the latest Tailwind classes and get structured JSON in return.</p>
-            <div class="flex gap-4">
-                <button class="flex-1 bg-violet-600 hover:bg-violet-500 text-white font-semibold py-3 rounded-lg transition-transform transform hover:scale-105">Get Started</button>
-                <button class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 rounded-lg">Documentation</button>
-            </div>
-        </div>
-        <div class="relative h-64">
-            <div class="absolute inset-0 bg-gradient-to-tr from-purple-600 to-blue-500 rounded-lg blur-2xl opacity-50"></div>
-            <div class="relative text-center p-6 bg-slate-800/50 backdrop-blur-md rounded-lg h-full flex flex-col justify-center items-center border border-slate-700">
-                <p class="text-6xl mb-4">✨</p>
-                <p class="text-xl font-medium text-white text-balance">Updated with size, text-wrap, and more filter utilities.</p>
-            </div>
-        </div>
-    </div>
-</div>
-`;
+        const sampleHtml = `<body class="p-8 bg-slate-900">
+  <a href="#" class="text-center rounded-lg px-4 py-2 bg-indigo-500/10 text-indigo-400 ring-1 ring-inset ring-indigo-500/20">
+    <span class="sr-only">Link to somewhere</span>
+    Click Me
+  </a>
+  <style>
+    .custom-class { color: hotpink; }
+  </style>
+</body>`;
         
         const htmlInput = document.getElementById('html-input');
         const jsonOutput = document.getElementById('json-output');
@@ -324,15 +329,25 @@
         const toastMessage = document.getElementById('toast-message');
 
         /**
-         * Parses a string of Tailwind classes and converts them to CSS-in-JS format.
-         * This version correctly groups styles by variants to avoid duplicate media queries.
-         * @param {string} classString - The string of classes from the HTML element.
-         * @returns {{style: object, variants: Array<object>}} - An object containing base styles and variants.
+         * Converts a hex color string to an rgba string.
+         * @param {string} hex - The hex color (e.g., '#RRGGBB').
+         * @param {number} alpha - The alpha value (0 to 1).
+         * @returns {string|null} - The rgba string or null if hex is invalid.
          */
+        function hexToRgba(hex, alpha) {
+            if (!/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) return null;
+            let c = hex.substring(1).split('');
+            if (c.length === 3) {
+                c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+            }
+            c = '0x' + c.join('');
+            return `rgba(${[(c>>16)&255, (c>>8)&255, c&255].join(',')},${alpha})`;
+        }
+        
         function parseTailwind(classString) {
             const style = {};
             const variants = [];
-            const groupedVariants = {}; // Intermediate object to group styles by prefix
+            const groupedVariants = {};
 
             const classes = classString.split(/\s+/).filter(c => c);
             
@@ -348,24 +363,41 @@
                 }
 
                 const parts = className.split(':');
-                const baseClass = parts.pop();
-                const prefixes = parts.sort(); // Sort to ensure consistency (e.g., 'focus:md:' is same as 'md:focus:')
+                let baseClass = parts.pop();
+                const prefixes = parts.sort();
                 const variantKey = prefixes.join(':');
 
                 let css = {};
-                const match = baseClass.match(arbitraryValueRegex);
-
-                if (match) {
-                    const prop = match[1];
-                    const value = match[2].replace(/_/g, ' ');
-                    // This is a simplified lookup for arbitrary values. A more robust solution would need a dedicated map.
-                    const cssProp = tailwindMap[prop] ? Object.keys(tailwindMap[prop])[0] : prop.replace('bg', 'background-color').replace('w', 'width').replace('h', 'height').replace('p', 'padding').replace('m', 'margin');
-                    css[cssProp] = value;
-                } else if (tailwindMap[baseClass]) {
-                    css = { ...tailwindMap[baseClass] };
+                
+                // Handle opacity modifier like 'bg-indigo-500/10'
+                if (baseClass.includes('/') && !baseClass.startsWith('[')) {
+                    const [classWithoutAlpha, alpha] = baseClass.split('/');
+                    const colorUtility = tailwindMap[classWithoutAlpha];
+                    if (colorUtility) {
+                        const cssProp = Object.keys(colorUtility)[0];
+                        const hexColor = colorUtility[cssProp];
+                        const alphaValue = parseInt(alpha, 10) / 100;
+                        const rgbaColor = hexToRgba(hexColor, alphaValue);
+                        if(rgbaColor) {
+                           css[cssProp] = rgbaColor;
+                        }
+                    }
                 } else {
-                    continue; 
+                     const match = baseClass.match(arbitraryValueRegex);
+                     if (match) {
+                        const prop = match[1];
+                        const value = match[2].replace(/_/g, ' ');
+                        const cssPropMap = { 'bg': 'background-color', 'w': 'width', 'h': 'height', 'p': 'padding', 'm': 'margin', 'text': 'color', 'border': 'border-color' };
+                        const cssProp = cssPropMap[prop] || prop;
+                        css[cssProp] = value;
+                    } else if (tailwindMap[baseClass]) {
+                        css = { ...tailwindMap[baseClass] };
+                    } else {
+                        continue; 
+                    }
                 }
+
+                if (Object.keys(css).length === 0) continue;
 
                 if (isImportant) {
                     Object.keys(css).forEach(key => css[key] = `${css[key]} !important`);
@@ -374,18 +406,14 @@
                 if (!variantKey) {
                     Object.assign(style, css);
                 } else {
-                    if (!groupedVariants[variantKey]) {
-                        groupedVariants[variantKey] = {};
-                    }
+                    if (!groupedVariants[variantKey]) groupedVariants[variantKey] = {};
                     Object.assign(groupedVariants[variantKey], css);
                 }
             }
-
-            // Convert the grouped variants into the final array structure
+            
             for (const key in groupedVariants) {
                 const variant = { style: groupedVariants[key] };
                 const prefixes = key.split(':');
-                
                 prefixes.forEach(prefix => {
                     if (responsivePrefixes[prefix]) {
                         variant.mediaQuery = { 'min-width': responsivePrefixes[prefix] };
@@ -406,8 +434,27 @@
 
             const id = crypto.randomUUID();
             let nodeData;
+            const tagName = domNode.tagName ? domNode.tagName.toLowerCase() : null;
 
             if (domNode.nodeType === 1) { // Element node
+                // Handle <style> tag separately
+                if (tagName === 'style') {
+                    nodeData = {
+                        type: 'element',
+                        tag: 'style',
+                        attrs: {},
+                        children: []
+                    };
+                    const styleContent = domNode.innerHTML;
+                    if (styleContent) {
+                        const textNodeId = crypto.randomUUID();
+                        nodes[textNodeId] = { type: 'text', value: { type: 'value', value: styleContent } };
+                        nodeData.children.push(textNodeId);
+                    }
+                    nodes[id] = nodeData;
+                    return id;
+                }
+                
                 const classNameString = (typeof domNode.className === 'object' && domNode.className.baseVal !== undefined)
                     ? domNode.className.baseVal
                     : domNode.className;
@@ -418,7 +465,7 @@
                 
                 nodeData = {
                     type: 'element',
-                    tag: domNode.tagName.toLowerCase(),
+                    tag: tagName === 'body' ? 'div' : tagName, // Convert body to div
                     classes: {},
                     attrs: {},
                     events: {},
@@ -470,29 +517,28 @@
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
                 
-                let rootElement = doc.body.firstElementChild;
-                // Handle cases where the pasted code might be a fragment wrapped in a template or just text
-                if (!rootElement || rootElement.tagName === 'SCRIPT' || rootElement.tagName === 'STYLE') {
+                // If the user pastes a full HTML document, start from body. Otherwise, create a wrapper.
+                let rootElement = doc.body;
+                if (!doc.body.firstElementChild && doc.head.firstElementChild) {
+                    // Handle case where content is in head
+                    rootElement = doc.head;
+                } else if (doc.body.children.length === 1 && doc.body.firstElementChild.tagName !== 'STYLE' && doc.body.firstElementChild.tagName !== 'SCRIPT') {
+                    // If there's a single element in the body, use it as the root
+                    rootElement = doc.body.firstElementChild;
+                } else {
+                    // Otherwise, process the whole body as a fragment
                     const tempWrapper = document.createElement('div');
                     Array.from(doc.body.childNodes).forEach(child => tempWrapper.appendChild(child.cloneNode(true)));
                     rootElement = tempWrapper;
                 }
-                
+
                 const nodes = {};
                 const rootId = processNode(rootElement, nodes);
                 
                 if (rootId) {
                     const rootNodeData = nodes[rootId];
-                    // If the root was our temporary wrapper, we need to adjust the structure
-                    if (rootNodeData.tag === 'div' && rootNodeData.children.length > 0 && Object.keys(rootNodeData.style).length === 3 && Object.keys(rootNodeData.variants).length === 0) {
-                        // This looks like our wrapper, let's use its children as the root list
-                        // This part might need adjustment depending on how you want to handle fragments
-                        // For now, we'll stick to a single root node. A real fragment could be handled differently.
-                    }
-
                     delete nodes[rootId];
                     nodes['root'] = rootNodeData;
-
                 }
 
                 const finalJson = { type: 'nodes', nodes: nodes };
