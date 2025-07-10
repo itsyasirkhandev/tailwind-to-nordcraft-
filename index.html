@@ -278,8 +278,7 @@
             ...genNegativeMargin('m', 'margin'), ...genNegativeMargin('mx', 'margin-left', 'margin-right'), ...genNegativeMargin('my', 'margin-top', 'margin-bottom'), ...genNegativeMargin('mt', 'margin-top'), ...genNegativeMargin('mr', 'margin-right'), ...genNegativeMargin('mb', 'margin-bottom'), ...genNegativeMargin('ml', 'margin-left'),
             'mx-auto': { 'margin-left': 'auto', 'margin-right': 'auto' },
             ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`gap-${k}`, { 'column-gap': v, 'row-gap': v }])), ...genSpacing('gap-x', 'column-gap'), ...genSpacing('gap-y', 'row-gap'),
-            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`space-y-${k}`, { 'row-gap': v }])),
-            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`space-x-${k}`, { 'column-gap': v }])),
+            ...genSpacing('space-y', 'row-gap'), ...genSpacing('space-x', 'column-gap'),
 
             // --- Sizing ---
             ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`w-${k}`, { width: v }])), 'w-auto': { 'width': 'auto' }, 'w-1/2': { 'width': '50%' }, 'w-1/3': { 'width': '33.333333%' }, 'w-2/3': { 'width': '66.666667%' }, 'w-1/4': { 'width': '25%' }, 'w-2/4': { 'width': '50%' }, 'w-3/4': { 'width': '75%' }, 'w-1/5': { 'width': '20%' }, 'w-2/5': { 'width': '40%' }, 'w-3/5': { 'width': '60%' }, 'w-4/5': { 'width': '80%' }, 'w-1/6': { 'width': '16.666667%' }, 'w-5/6': { 'width': '83.333333%' }, 'w-full': { 'width': '100%' }, 'w-screen': { 'width': '100vw' }, 'w-min': { 'width': 'min-content' }, 'w-max': { 'width': 'max-content' }, 'w-fit': { 'width': 'fit-content' },
@@ -360,21 +359,6 @@
             'select-none': { 'user-select': 'none' }, 'select-text': { 'user-select': 'text' }, 'select-all': { 'user-select': 'all' }, 'select-auto': { 'user-select': 'auto' },
             'will-change-auto': { 'will-change': 'auto' }, 'will-change-scroll': { 'will-change': 'scroll-position' }, 'will-change-contents': { 'will-change': 'contents' }, 'will-change-transform': { 'will-change': 'transform' },
         };
-        
-        const sampleHtml = `<div class="p-8 bg-gray-800 rounded-lg">
-    <h3 class="text-xl font-bold mb-4">Using space-y-4</h3>
-    <div class="space-y-4">
-        <div class="p-4 bg-blue-500 rounded-md shadow">Child 1</div>
-        <div class="p-4 bg-blue-500 rounded-md shadow">Child 2</div>
-        <div class="p-4 bg-blue-500 rounded-md shadow">Child 3</div>
-    </div>
-    <h3 class="text-xl font-bold mb-4 mt-8">Using gap-4</h3>
-    <div class="flex flex-col gap-4">
-        <div class="p-4 bg-green-500 rounded-md shadow">Child 1</div>
-        <div class="p-4 bg-green-500 rounded-md shadow">Child 2</div>
-        <div class="p-4 bg-green-500 rounded-md shadow">Child 3</div>
-    </div>
-</div>`;
         
         const htmlInput = document.getElementById('html-input');
         const jsonOutput = document.getElementById('json-output');
@@ -480,7 +464,6 @@
             const style = {};
             let variants = [];
             const groupedVariants = {};
-            const directives = {};
 
             const classes = classString.split(/\s+/).filter(c => c);
             
@@ -568,25 +551,7 @@
                 postProcessStyle(variant.style, style);
             });
             
-            // Handle space utilities by converting them to directives.
-            if (style['--nordcraft-space-y']) {
-                directives['space-y'] = style['--nordcraft-space-y'];
-                delete style['--nordcraft-space-y'];
-            }
-             if (style['--nordcraft-space-x']) {
-                directives['space-x'] = style['--nordcraft-space-x'];
-                delete style['--nordcraft-space-x'];
-            }
-            if (style['--nordcraft-space-y-reverse']) {
-                directives['space-y-reverse'] = true;
-                delete style['--nordcraft-space-y-reverse'];
-            }
-             if (style['--nordcraft-space-x-reverse']) {
-                directives['space-x-reverse'] = true;
-                delete style['--nordcraft-space-x-reverse'];
-            }
-
-            return { style, variants, directives };
+            return { style, variants };
         }
         
         /**
@@ -640,7 +605,7 @@
                     : domNode.className;
 
                 const expandedClassString = expandClasses(classNameString, componentClassMap);
-                const { style, variants, directives } = parseTailwind(expandedClassString);
+                const { style, variants } = parseTailwind(expandedClassString);
                 
                 const tableDisplayMap = {
                     'table': 'table', 'thead': 'table-header-group', 'tbody': 'table-row-group',
@@ -672,8 +637,6 @@
                     attrs: {},
                     events: {},
                     style: finalStyle,
-                    directives: directives,
-                    styleVariables: {},
                     variants: variants,
                     children: []
                 };
