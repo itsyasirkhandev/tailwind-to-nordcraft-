@@ -208,7 +208,7 @@
             
             // --- Layout ---
             'aspect-auto': { 'aspect-ratio': 'auto' }, 'aspect-square': { 'aspect-ratio': '1 / 1' }, 'aspect-video': { 'aspect-ratio': '16 / 9' },
-            'container': { 'width': '100%' }, // Note: responsive max-width is handled by media queries, which this simple tool doesn't fully replicate for this class.
+            'container': { 'width': '100%' },
             ...Object.fromEntries(Array.from({ length: 12 }, (_, i) => i + 1).map(i => [`columns-${i}`, { 'columns': `${i}` }])),
             'columns-auto': { 'columns': 'auto' }, 'columns-3xs': { 'columns': '16rem' }, 'columns-2xs': { 'columns': '18rem' }, 'columns-xs': { 'columns': '20rem' }, 'columns-sm': { 'columns': '24rem' }, 'columns-md': { 'columns': '28rem' }, 'columns-lg': { 'columns': '32rem' }, 'columns-xl': { 'columns': '36rem' }, 'columns-2xl': { 'columns': '42rem' }, 'columns-3xl': { 'columns': '48rem' }, 'columns-4xl': { 'columns': '56rem' }, 'columns-5xl': { 'columns': '64rem' }, 'columns-6xl': { 'columns': '72rem' }, 'columns-7xl': { 'columns': '80rem' },
             'break-after-auto': { 'break-after': 'auto' }, 'break-after-avoid': { 'break-after': 'avoid' }, 'break-after-all': { 'break-after': 'all' }, 'break-after-avoid-page': { 'break-after': 'avoid-page' }, 'break-after-page': { 'break-after': 'page' }, 'break-after-left': { 'break-after': 'left' }, 'break-after-right': { 'break-after': 'right' }, 'break-after-column': { 'break-after': 'column' },
@@ -246,7 +246,7 @@
             'ring-0': {'box-shadow': 'var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color)'}, 'ring-1': {'box-shadow': 'var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color)'}, 'ring-2': {'box-shadow': 'var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color)'}, 'ring-4': {'box-shadow': 'var(--tw-ring-inset) 0 0 0 calc(4px + var(--tw-ring-offset-width)) var(--tw-ring-color)'}, 'ring-8': {'box-shadow': 'var(--tw-ring-inset) 0 0 0 calc(8px + var(--tw-ring-offset-width)) var(--tw-ring-color)'}, 'ring': {'box-shadow': 'var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color)'},
             'ring-inset': { '--tw-ring-inset': 'inset' },
             ...Object.fromEntries([0, 5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 100].map(o => [`ring-opacity-${o}`, { '--ring-opacity': o / 100 }])),
-            'ring-offset-0': { '--ring-offset-width': '0px', 'box-shadow': '0 0 0 var(--ring-offset-width) var(--ring-offset-color), var(--ring-shadow)'}, 'ring-offset-1': { '--ring-offset-width': '1px', 'box-shadow': '0 0 0 var(--ring-offset-width) var(--ring-offset-color), var(--ring-shadow)'}, 'ring-offset-2': { '--ring-offset-width': '2px', 'box-shadow': '0 0 0 var(--ring-offset-width) var(--ring-offset-color), var(--ring-shadow)'}, 'ring-offset-4': { '--ring-offset-width': '4px', 'box-shadow': '0 0 0 var(--ring-offset-width) var(--ring-offset-color), var(--ring-shadow)'}, 'ring-offset-8': { '--ring-offset-width': '8px', 'box-shadow': '0 0 0 var(--ring-offset-width) var(--ring-offset-color), var(--ring-shadow)'},
+            'ring-offset-0': { '--ring-offset-width': '0px', 'box-shadow': '0 0 0 var(--ring-offset-width) var(--ring-offset-color), var(--ring-shadow)'}, 'ring-offset-1': { '--ring-offset-width': '1px', 'box-shadow': '0 0 0 var(--ring-offset-width) var(--ring-offset-color), var(--ring-shadow)'}, 'ring-offset-2': { '--ring-offset-width': '2px', 'box-shadow': '0 0 0 var(--tw-ring-offset-width) var(--ring-offset-color), var(--ring-shadow)'}, 'ring-offset-4': { '--ring-offset-width': '4px', 'box-shadow': '0 0 0 var(--ring-offset-width) var(--ring-offset-color), var(--ring-shadow)'}, 'ring-offset-8': { '--ring-offset-width': '8px', 'box-shadow': '0 0 0 var(--ring-offset-width) var(--ring-offset-color), var(--ring-shadow)'},
 
             // --- Flexbox & Grid ---
             ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`basis-${k}`, { 'flex-basis': v }])), 'basis-auto': { 'flex-basis': 'auto' }, 'basis-full': { 'flex-basis': '100%' },
@@ -262,8 +262,6 @@
             'grid-flow-row': { 'grid-auto-flow': 'row' }, 'grid-flow-col': { 'grid-auto-flow': 'column' }, 'grid-flow-dense': { 'grid-auto-flow': 'dense' }, 'grid-flow-row-dense': { 'grid-auto-flow': 'row dense' }, 'grid-flow-col-dense': { 'grid-auto-flow': 'column dense' },
             'auto-cols-auto': { 'grid-auto-columns': 'auto' }, 'auto-cols-min': { 'grid-auto-columns': 'min-content' }, 'auto-cols-max': { 'grid-auto-columns': 'max-content' }, 'auto-cols-fr': { 'grid-auto-columns': 'minmax(0, 1fr)' },
             'auto-rows-auto': { 'grid-auto-rows': 'auto' }, 'auto-rows-min': { 'grid-auto-rows': 'min-content' }, 'auto-rows-max': { 'grid-auto-rows': 'max-content' }, 'auto-rows-fr': { 'grid-auto-rows': 'minmax(0, 1fr)' },
-            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`gap-${k}`, { 'column-gap': v, 'row-gap': v }])), ...genSpacing('gap-x', 'column-gap'), ...genSpacing('gap-y', 'row-gap'),
-            ...genSpacing('space-y', 'row-gap'), ...genSpacing('space-x', 'column-gap'),
             'justify-normal': {'justify-content': 'normal'}, 'justify-start': { 'justify-content': 'flex-start' }, 'justify-end': { 'justify-content': 'flex-end' }, 'justify-center': { 'justify-content': 'center' }, 'justify-between': { 'justify-content': 'space-between' }, 'justify-around': { 'justify-content': 'space-around' }, 'justify-evenly': { 'justify-content': 'space-evenly' }, 'justify-stretch': { 'justify-content': 'stretch' },
             'justify-items-start': { 'justify-items': 'start' }, 'justify-items-end': { 'justify-items': 'end' }, 'justify-items-center': { 'justify-items': 'center' }, 'justify-items-stretch': { 'justify-items': 'stretch' },
             'justify-self-auto': { 'justify-self': 'auto' }, 'justify-self-start': { 'justify-self': 'start' }, 'justify-self-end': { 'justify-self': 'end' }, 'justify-self-center': { 'justify-self': 'center' }, 'justify-self-stretch': { 'justify-self': 'stretch' },
@@ -279,6 +277,9 @@
             ...genSpacing('m', 'margin'), ...genXYSpacing('mx', 'margin-left', 'margin-right'), ...genXYSpacing('my', 'margin-top', 'margin-bottom'), ...genSpacing('mt', 'margin-top'), ...genSpacing('mr', 'margin-right'), ...genSpacing('mb', 'margin-bottom'), ...genSpacing('ml', 'margin-left'),
             ...genNegativeMargin('m', 'margin'), ...genNegativeMargin('mx', 'margin-left', 'margin-right'), ...genNegativeMargin('my', 'margin-top', 'margin-bottom'), ...genNegativeMargin('mt', 'margin-top'), ...genNegativeMargin('mr', 'margin-right'), ...genNegativeMargin('mb', 'margin-bottom'), ...genNegativeMargin('ml', 'margin-left'),
             'mx-auto': { 'margin-left': 'auto', 'margin-right': 'auto' },
+            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`gap-${k}`, { 'column-gap': v, 'row-gap': v }])), ...genSpacing('gap-x', 'column-gap'), ...genSpacing('gap-y', 'row-gap'),
+            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`space-y-${k}`, { 'row-gap': v }])),
+            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`space-x-${k}`, { 'column-gap': v }])),
 
             // --- Sizing ---
             ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`w-${k}`, { width: v }])), 'w-auto': { 'width': 'auto' }, 'w-1/2': { 'width': '50%' }, 'w-1/3': { 'width': '33.333333%' }, 'w-2/3': { 'width': '66.666667%' }, 'w-1/4': { 'width': '25%' }, 'w-2/4': { 'width': '50%' }, 'w-3/4': { 'width': '75%' }, 'w-1/5': { 'width': '20%' }, 'w-2/5': { 'width': '40%' }, 'w-3/5': { 'width': '60%' }, 'w-4/5': { 'width': '80%' }, 'w-1/6': { 'width': '16.666667%' }, 'w-5/6': { 'width': '83.333333%' }, 'w-full': { 'width': '100%' }, 'w-screen': { 'width': '100vw' }, 'w-min': { 'width': 'min-content' }, 'w-max': { 'width': 'max-content' }, 'w-fit': { 'width': 'fit-content' },
@@ -360,6 +361,21 @@
             'will-change-auto': { 'will-change': 'auto' }, 'will-change-scroll': { 'will-change': 'scroll-position' }, 'will-change-contents': { 'will-change': 'contents' }, 'will-change-transform': { 'will-change': 'transform' },
         };
         
+        const sampleHtml = `<div class="p-8 bg-gray-800 rounded-lg">
+    <h3 class="text-xl font-bold mb-4">Using space-y-4</h3>
+    <div class="space-y-4">
+        <div class="p-4 bg-blue-500 rounded-md shadow">Child 1</div>
+        <div class="p-4 bg-blue-500 rounded-md shadow">Child 2</div>
+        <div class="p-4 bg-blue-500 rounded-md shadow">Child 3</div>
+    </div>
+    <h3 class="text-xl font-bold mb-4 mt-8">Using gap-4</h3>
+    <div class="flex flex-col gap-4">
+        <div class="p-4 bg-green-500 rounded-md shadow">Child 1</div>
+        <div class="p-4 bg-green-500 rounded-md shadow">Child 2</div>
+        <div class="p-4 bg-green-500 rounded-md shadow">Child 3</div>
+    </div>
+</div>`;
+        
         const htmlInput = document.getElementById('html-input');
         const jsonOutput = document.getElementById('json-output');
         const outputPlaceholder = document.getElementById('output-placeholder');
@@ -428,7 +444,6 @@
                 if (from) stops.push(from);
                 if (via) stops.push(via);
                 
-                // If there's a 'from' but no 'to', Tailwind creates a fade-to-transparent effect.
                 if (to) {
                     stops.push(to);
                 } else if (from && !to) {
@@ -465,6 +480,7 @@
             const style = {};
             let variants = [];
             const groupedVariants = {};
+            const directives = {};
 
             const classes = classString.split(/\s+/).filter(c => c);
             
@@ -503,7 +519,6 @@
                          const prop = match[1];
                          let value = match[2].replace(/_/g, ' ');
 
-                         // Handle arbitrary colors for gradients
                          const gradientPropMap = {'from': '--tw-gradient-from-color', 'via': '--tw-gradient-via-color', 'to': '--tw-gradient-to-color'};
                          if (gradientPropMap[prop]) {
                             css[gradientPropMap[prop]] = value;
@@ -552,8 +567,26 @@
             variants.forEach(variant => {
                 postProcessStyle(variant.style, style);
             });
+            
+            // Handle space utilities by converting them to directives.
+            if (style['--nordcraft-space-y']) {
+                directives['space-y'] = style['--nordcraft-space-y'];
+                delete style['--nordcraft-space-y'];
+            }
+             if (style['--nordcraft-space-x']) {
+                directives['space-x'] = style['--nordcraft-space-x'];
+                delete style['--nordcraft-space-x'];
+            }
+            if (style['--nordcraft-space-y-reverse']) {
+                directives['space-y-reverse'] = true;
+                delete style['--nordcraft-space-y-reverse'];
+            }
+             if (style['--nordcraft-space-x-reverse']) {
+                directives['space-x-reverse'] = true;
+                delete style['--nordcraft-space-x-reverse'];
+            }
 
-            return { style, variants };
+            return { style, variants, directives };
         }
         
         /**
@@ -607,7 +640,7 @@
                     : domNode.className;
 
                 const expandedClassString = expandClasses(classNameString, componentClassMap);
-                const { style, variants } = parseTailwind(expandedClassString);
+                const { style, variants, directives } = parseTailwind(expandedClassString);
                 
                 const tableDisplayMap = {
                     'table': 'table', 'thead': 'table-header-group', 'tbody': 'table-row-group',
@@ -639,6 +672,7 @@
                     attrs: {},
                     events: {},
                     style: finalStyle,
+                    directives: directives,
                     styleVariables: {},
                     variants: variants,
                     children: []
