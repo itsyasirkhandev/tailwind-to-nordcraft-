@@ -41,7 +41,7 @@
                 <h1 class="text-xl font-bold text-white">Tailwind to Nordcraft JSON Converter</h1>
                 <div class="flex items-center gap-4">
                      <a href="https://github.com/google/labs-prototypes" target="_blank" class="text-gray-400 hover:text-white transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35.0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/></svg>
+                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35.0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/></svg>
                     </a>
                 </div>
             </div>
@@ -117,11 +117,13 @@
         const generatedColorUtilities = {};
         const colorProps = {
             'bg': 'background-color', 'text': 'color', 'border': 'border-color',
-            'ring': '--tw-ring-color', 'ring-offset': '--tw-ring-offset-color',
+            'ring': '--ring-color', 'ring-offset': '--ring-offset-color',
             'accent': 'accent-color', 'caret': 'caret-color', 'fill': 'fill', 'stroke': 'stroke',
             'decoration': 'text-decoration-color',
-            'from': '--tw-gradient-from', 'via': '--tw-gradient-stops', 'to': '--tw-gradient-to',
-            'divide': 'border-color'
+            'from': '--tw-gradient-from-color', 'via': '--tw-gradient-via-color', 'to': '--tw-gradient-to-color',
+            'divide': 'border-color',
+            'shadow': '--tw-shadow-color',
+            'outline': 'outline-color',
         };
         for (const colorName in colors) {
             for (const shade in colors[colorName]) {
@@ -132,64 +134,126 @@
                 }
             }
         }
-        
+         // Add special colors
+        for (const propPrefix in colorProps) {
+            const cssProp = colorProps[propPrefix];
+            generatedColorUtilities[`${propPrefix}-transparent`] = { [cssProp]: 'transparent' };
+            generatedColorUtilities[`${propPrefix}-current`] = { [cssProp]: 'currentColor' };
+            generatedColorUtilities[`${propPrefix}-black`] = { [cssProp]: '#000' };
+            generatedColorUtilities[`${propPrefix}-white`] = { [cssProp]: '#fff' };
+        }
+
         const spacingScale = { '0': '0px', 'px': '1px', '0.5': '0.125rem', '1': '0.25rem', '1.5': '0.375rem', '2': '0.5rem', '2.5': '0.625rem', '3': '0.75rem', '3.5': '0.875rem', '4': '1rem', '5': '1.25rem', '6': '1.5rem', '7': '1.75rem', '8': '2rem', '9': '2.25rem', '10': '2.5rem', '11': '2.75rem', '12': '3rem', '14': '3.5rem', '16': '4rem', '20': '5rem', '24': '6rem', '28': '7rem', '32': '8rem', '36': '9rem', '40': '10rem', '44': '11rem', '48': '12rem', '52': '13rem', '56': '14rem', '60': '15rem', '64': '16rem', '72': '18rem', '80': '20rem', '96': '24rem' };
         
         const genSpacing = (prefix, prop) => Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`${prefix}-${k}`, { [prop]: v }]));
         const genXYSpacing = (prefix, propX, propY) => Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`${prefix}-${k}`, { [propX]: v, [propY]: v }]));
         const genNegativeMargin = (prefix, prop) => Object.fromEntries(Object.entries(spacingScale).filter(([k,v]) => v!=='0px').map(([k, v]) => [`-${prefix}-${k}`, { [prop]: `-${v}` }]));
         
+        // --- Generator for complex border-radius classes ---
+        const borderRadiusSizes = { 'none': '0px', 'sm': '0.125rem', '': '0.25rem', 'md': '0.375rem', 'lg': '0.5rem', 'xl': '0.75rem', '2xl': '1rem', '3xl': '1.5rem', 'full': '9999px' };
+        const borderRadiusSides = { 't': ['top-left', 'top-right'], 'r': ['top-right', 'bottom-right'], 'b': ['bottom-right', 'bottom-left'], 'l': ['top-left', 'bottom-left']};
+        const borderRadiusCorners = { 'tl': ['top-left'], 'tr': ['top-right'], 'br': ['bottom-right'], 'bl': ['bottom-left'] };
+        
+        let borderRadiusUtilities = {};
+        for (const [sizeKey, sizeValue] of Object.entries(borderRadiusSizes)) {
+            // Full radius: rounded, rounded-sm, etc.
+            const key = sizeKey === '' ? 'rounded' : `rounded-${sizeKey}`;
+            borderRadiusUtilities[key] = { 'border-radius': sizeValue };
+            
+            // Side-specific: rounded-t-sm, rounded-r-md, etc.
+            for(const [sideKey, sideProps] of Object.entries(borderRadiusSides)) {
+                const sideClassKey = `rounded-${sideKey}` + (sizeKey ? `-${sizeKey}`: '');
+                const style = {};
+                for (const prop of sideProps) { style[`border-${prop}-radius`] = sizeValue; }
+                borderRadiusUtilities[sideClassKey] = style;
+            }
+             // Corner-specific: rounded-tl-sm, rounded-br-md, etc.
+            for(const [cornerKey, cornerProps] of Object.entries(borderRadiusCorners)) {
+                const cornerClassKey = `rounded-${cornerKey}` + (sizeKey ? `-${sizeKey}`: '');
+                 const style = {};
+                for (const prop of cornerProps) { style[`border-${prop}-radius`] = sizeValue; }
+                borderRadiusUtilities[cornerClassKey] = style;
+            }
+        }
+
+        // --- Generator for complex inset (top/right/bottom/left) classes ---
+        const insetScale = { ...spacingScale, 'auto': 'auto', '1/2': '50%', '1/3': '33.333333%', '2/3': '66.666667%', '1/4': '25%', '3/4': '75%', 'full': '100%' };
+        let insetUtilities = {};
+        for (const [key, value] of Object.entries(insetScale)) {
+            const negValue = value !== 'auto' && value !== '0px' ? `-${value}` : value;
+            insetUtilities[`inset-${key}`] = { 'top': value, 'right': value, 'bottom': value, 'left': value };
+            insetUtilities[`inset-x-${key}`] = { 'left': value, 'right': value };
+            insetUtilities[`inset-y-${key}`] = { 'top': value, 'bottom': value };
+            insetUtilities[`top-${key}`] = { 'top': value };
+            insetUtilities[`right-${key}`] = { 'right': value };
+            insetUtilities[`bottom-${key}`] = { 'bottom': value };
+            insetUtilities[`left-${key}`] = { 'left': value };
+
+            if (value !== 'auto') {
+                 insetUtilities[`-inset-${key}`] = { 'top': negValue, 'right': negValue, 'bottom': negValue, 'left': negValue };
+                 insetUtilities[`-inset-x-${key}`] = { 'left': negValue, 'right': negValue };
+                 insetUtilities[`-inset-y-${key}`] = { 'top': negValue, 'bottom': negValue };
+                 insetUtilities[`-top-${key}`] = { 'top': negValue };
+                 insetUtilities[`-right-${key}`] = { 'right': negValue };
+                 insetUtilities[`-bottom-${key}`] = { 'bottom': negValue };
+                 insetUtilities[`-left-${key}`] = { 'left': negValue };
+            }
+        }
+
         const tailwindMap = {
             ...generatedColorUtilities,
 
             // --- Accessibility ---
             'sr-only': { position: 'absolute', width: '1px', height: '1px', padding: '0', margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', 'white-space': 'nowrap', 'border-width': '0' },
-
+            'not-sr-only': { position: 'static', width: 'auto', height: 'auto', padding: '0', margin: '0', overflow: 'visible', clip: 'auto', 'white-space': 'normal' },
+            
             // --- Layout ---
-            // Column count classes (example for 12 columns)
-            ...Object.fromEntries(Array.from({ length: 13 }, (_, i) => i + 1).map(i => [`columns-${i}`, { 'columns': `${i}` }])),
-            // Column span classes (example for 12 spans)
-            ...Object.fromEntries(Array.from({ length: 13 }, (_, i) => i > 0 ? [`col-span-${i}`, { 'grid-column': `span ${i} / span ${i}` }] : [])), 'col-span-full': { 'grid-column': '1 / -1' },
-            // Column start/end classes (example for 14 start/end positions)
-            ...Object.fromEntries(Array.from({ length: 14 }, (_, i) => i > 0 ? [`col-start-${i}`, { 'grid-column-start': i }] : [])), 'col-start-auto': { 'grid-column-start': 'auto' },
-            ...Object.fromEntries(Array.from({ length: 14 }, (_, i) => i > 0 ? [`col-end-${i}`, { 'grid-column-end': i }] : [])), 'col-end-auto': { 'grid-column-end': 'auto' },
-            // Row span classes (example for 13 spans)
-            ...Object.fromEntries(Array.from({ length: 13 }, (_, i) => i > 0 ? [`row-span-${i}`, { 'grid-row': `span ${i} / span ${i}` }] : [])), 'row-span-full': { 'grid-row': '1 / -1' },
-            // Row start/end classes (example for 14 start/end positions)
-            ...Object.fromEntries(Array.from({ length: 14 }, (_, i) => i > 0 ? [`row-start-${i}`, { 'grid-row-start': i }] : [])), 'row-start-auto': { 'grid-row-start': 'auto' },
-            ...Object.fromEntries(Array.from({ length: 14 }, (_, i) => i > 0 ? [`row-end-${i}`, { 'grid-row-end': i }] : [])), 'row-end-auto': { 'grid-row-end': 'auto' },
-            // Grid auto-columns and auto-rows
-            'auto-cols-auto': { 'grid-auto-columns': 'auto' }, 'auto-cols-min': { 'grid-auto-columns': 'min-content' }, 'auto-cols-max': { 'grid-auto-columns': 'max-content' }, 'auto-cols-fr': { 'grid-auto-columns': 'minmax(0, 1fr)' },
-            'auto-rows-auto': { 'grid-auto-rows': 'auto' }, 'auto-rows-min': { 'grid-auto-rows': 'min-content' }, 'auto-rows-max': { 'grid-auto-rows': 'max-content' }, 'auto-rows-fr': { 'grid-auto-rows': 'minmax(0, 1fr)' },
-            // Gap classes
-            ...genSpacing('gap', 'gap'), ...genSpacing('gap-x', 'column-gap'), ...genSpacing('gap-y', 'row-gap'),
-            // Justify content and items
-            'justify-normal': {'justify-content': 'normal'}, 'justify-start': { 'justify-content': 'flex-start' }, 'justify-end': { 'justify-content': 'flex-end' }, 'justify-center': { 'justify-content': 'center' }, 'justify-between': { 'justify-content': 'space-between' }, 'justify-around': { 'justify-content': 'space-around' }, 'justify-evenly': { 'justify-content': 'space-evenly' }, 'justify-stretch': { 'justify-content': 'stretch' },
-            'justify-items-start': { 'justify-items': 'start' }, 'justify-items-end': { 'justify-items': 'end' }, 'justify-items-center': { 'justify-items': 'center' }, 'justify-items-stretch': { 'justify-items': 'stretch' },
-            // Justify self
-            'justify-self-auto': { 'justify-self': 'auto' }, 'justify-self-start': { 'justify-self': 'start' }, 'justify-self-end': { 'justify-self': 'end' }, 'justify-self-center': { 'justify-self': 'center' }, 'justify-self-stretch': { 'justify-self': 'stretch' },
-            // Align content, items, and self
-            'content-normal': {'align-content': 'normal'}, 'content-center': { 'align-content': 'center' }, 'content-start': { 'align-content': 'flex-start' }, 'content-end': { 'align-content': 'flex-end' }, 'content-between': { 'align-content': 'space-between' }, 'content-around': { 'align-content': 'space-around' }, 'content-evenly': { 'align-content': 'space-evenly' }, 'content-baseline': {'align-content': 'baseline'}, 'content-stretch': {'align-content': 'stretch'},
-            'items-start': { 'align-items': 'flex-start' }, 'items-end': { 'align-items': 'flex-end' }, 'items-center': { 'align-items': 'center' }, 'items-baseline': { 'align-items': 'baseline' }, 'items-stretch': { 'align-items': 'stretch' },
-            'self-auto': { 'align-self': 'auto' }, 'self-start': { 'align-self': 'flex-start' }, 'self-end': { 'align-self': 'flex-end' }, 'self-center': { 'align-self': 'center' }, 'self-stretch': { 'align-self': 'stretch' }, 'self-baseline': { 'align-self': 'baseline' },
-            // Place content and items
-            'place-content-center': { 'place-content': 'center' }, 'place-content-start': { 'place-content': 'start' }, 'place-content-end': { 'place-content': 'end' }, 'place-content-between': { 'place-content': 'space-between' }, 'place-content-around': { 'place-content': 'space-around' }, 'place-content-evenly': { 'place-content': 'space-evenly' }, 'place-content-baseline': {'place-content': 'baseline'}, 'place-content-stretch': { 'place-content': 'stretch' },
-            'place-items-start': { 'place-items': 'start' }, 'place-items-end': { 'place-items': 'end' }, 'place-items-center': { 'place-items': 'center' }, 'place-items-stretch': { 'place-items': 'stretch' },
-            'place-self-auto': { 'place-self': 'auto' }, 'place-self-start': { 'place-self': 'start' }, 'place-self-end': { 'place-self': 'end' }, 'place-self-center': { 'place-self': 'center' }, 'place-self-stretch': { 'place-self': 'stretch' },
-            // Other layout properties
-            'box-decoration-slice': { 'box-decoration-break': 'slice' }, 'box-decoration-clone': { 'box-decoration-break': 'clone' },
+            'aspect-auto': { 'aspect-ratio': 'auto' }, 'aspect-square': { 'aspect-ratio': '1 / 1' }, 'aspect-video': { 'aspect-ratio': '16 / 9' },
+            'container': { 'width': '100%' }, // Note: responsive max-width is handled by media queries, which this simple tool doesn't fully replicate for this class.
+            ...Object.fromEntries(Array.from({ length: 12 }, (_, i) => i + 1).map(i => [`columns-${i}`, { 'columns': `${i}` }])),
+            'columns-auto': { 'columns': 'auto' }, 'columns-3xs': { 'columns': '16rem' }, 'columns-2xs': { 'columns': '18rem' }, 'columns-xs': { 'columns': '20rem' }, 'columns-sm': { 'columns': '24rem' }, 'columns-md': { 'columns': '28rem' }, 'columns-lg': { 'columns': '32rem' }, 'columns-xl': { 'columns': '36rem' }, 'columns-2xl': { 'columns': '42rem' }, 'columns-3xl': { 'columns': '48rem' }, 'columns-4xl': { 'columns': '56rem' }, 'columns-5xl': { 'columns': '64rem' }, 'columns-6xl': { 'columns': '72rem' }, 'columns-7xl': { 'columns': '80rem' },
+            'break-after-auto': { 'break-after': 'auto' }, 'break-after-avoid': { 'break-after': 'avoid' }, 'break-after-all': { 'break-after': 'all' }, 'break-after-avoid-page': { 'break-after': 'avoid-page' }, 'break-after-page': { 'break-after': 'page' }, 'break-after-left': { 'break-after': 'left' }, 'break-after-right': { 'break-after': 'right' }, 'break-after-column': { 'break-after': 'column' },
+            'break-before-auto': { 'break-before': 'auto' }, 'break-before-avoid': { 'break-before': 'avoid' }, 'break-before-all': { 'break-before': 'all' }, 'break-before-avoid-page': { 'break-before': 'avoid-page' }, 'break-before-page': { 'break-before': 'page' }, 'break-before-left': { 'break-before': 'left' }, 'break-before-right': { 'break-before': 'right' }, 'break-before-column': { 'break-before': 'column' },
+            'break-inside-auto': { 'break-inside': 'auto' }, 'break-inside-avoid': { 'break-inside': 'avoid' }, 'break-inside-avoid-page': { 'break-inside': 'avoid-page' }, 'break-inside-avoid-column': { 'break-inside': 'column' },
+            'decoration-slice': { 'box-decoration-break': 'slice' }, 'decoration-clone': { 'box-decoration-break': 'clone' },
             'box-border': { 'box-sizing': 'border-box' }, 'box-content': { 'box-sizing': 'content-box' },
             'block': { 'display': 'block' }, 'inline-block': { 'display': 'inline-block' }, 'inline': { 'display': 'inline' }, 'flex': { 'display': 'flex' }, 'inline-flex': { 'display': 'inline-flex' }, 'table': { 'display': 'table' }, 'inline-table': { 'display': 'inline-table' }, 'table-caption': { 'display': 'table-caption' }, 'table-cell': { 'display': 'table-cell' }, 'table-column': { 'display': 'table-column' }, 'table-column-group': { 'display': 'table-column-group' }, 'table-footer-group': { 'display': 'table-footer-group' }, 'table-header-group': { 'display': 'table-header-group' }, 'table-row-group': { 'display': 'table-row-group' }, 'table-row': { 'display': 'table-row' }, 'flow-root': { 'display': 'flow-root' }, 'grid': { 'display': 'grid' }, 'inline-grid': { 'display': 'inline-grid' }, 'contents': { 'display': 'contents' }, 'list-item': { 'display': 'list-item' }, 'hidden': { 'display': 'none' },
-            'aspect-auto': { 'aspect-ratio': 'auto' }, 'aspect-square': { 'aspect-ratio': '1 / 1' }, 'aspect-video': { 'aspect-ratio': '16 / 9' },
-            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`inset-${k}`, { inset: v }])), ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`inset-x-${k}`, { left: v, right: v }])), ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`inset-y-${k}`, { top: v, bottom: v }])), ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`top-${k}`, { top: v }])), ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`bottom-${k}`, { bottom: v }])), ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`left-${k}`, { left: v }])), ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`right-${k}`, { right: v }])),
-            'float-right': { 'float': 'right' }, 'float-left': { 'float': 'left' }, 'float-none': { 'float': 'none' }, 'clear-left': { 'clear': 'left' }, 'clear-right': { 'clear': 'right' }, 'clear-both': { 'clear': 'both' }, 'clear-none': { 'clear': 'none' },
+            'float-right': { 'float': 'right' }, 'float-left': { 'float': 'left' }, 'float-none': { 'float': 'none' },
+            'clear-left': { 'clear': 'left' }, 'clear-right': { 'clear': 'right' }, 'clear-both': { 'clear': 'both' }, 'clear-none': { 'clear': 'none' },
             'isolate': { 'isolation': 'isolate' }, 'isolation-auto': { 'isolation': 'auto' },
-            'object-contain': { 'object-fit': 'contain' }, 'object-cover': { 'object-fit': 'cover' }, 'object-fill': { 'object-fit': 'fill' }, 'object-none': { 'object-fit': 'none' }, 'object-scale-down': { 'object-fit': 'scale-down' }, 'object-bottom': { 'object-position': 'bottom' }, 'object-center': { 'object-position': 'center' }, 'object-left': { 'object-position': 'left' }, 'object-left-bottom': { 'object-position': 'left bottom' }, 'object-left-top': { 'object-position': 'left top' }, 'object-right': { 'object-position': 'right' }, 'object-right-bottom': { 'object-position': 'right bottom' }, 'object-right-top': { 'object-position': 'right top' }, 'object-top': { 'object-position': 'top' },
-            'overflow-auto': { 'overflow': 'auto' }, 'overflow-hidden': { 'overflow': 'hidden' }, 'overflow-clip': { 'overflow': 'clip' }, 'overflow-visible': { 'overflow': 'visible' }, 'overflow-scroll': { 'overflow': 'scroll' }, 'overflow-x-auto': { 'overflow-x': 'auto' }, 'overflow-y-auto': { 'overflow-y': 'auto' }, 'overflow-x-hidden': { 'overflow-x': 'hidden' }, 'overflow-y-hidden': { 'overflow-y': 'hidden' }, 'overflow-x-clip': { 'overflow-x': 'clip' }, 'overflow-y-clip': { 'overflow-y': 'clip' }, 'overflow-x-visible': { 'overflow-x': 'visible' }, 'overflow-y-visible': { 'overflow-y': 'visible' }, 'overflow-x-scroll': { 'overflow-x': 'scroll' }, 'overflow-y-scroll': { 'overflow-y': 'scroll' },
-            'overscroll-auto': { 'overscroll-behavior': 'auto' }, 'overscroll-contain': { 'overscroll-behavior': 'contain' }, 'overscroll-none': { 'overscroll-behavior': 'none' }, 'overscroll-y-auto': { 'overscroll-behavior-y': 'auto' }, 'overscroll-y-contain': { 'overscroll-behavior-y': 'contain' }, 'overscroll-y-none': { 'overscroll-behavior-y': 'none' }, 'overscroll-x-auto': { 'overscroll-behavior-x': 'auto' }, 'overscroll-x-contain': { 'overscroll-behavior-x': 'contain' }, 'overscroll-x-none': { 'overscroll-behavior-x': 'none' },
+            'object-contain': { 'object-fit': 'contain' }, 'object-cover': { 'object-fit': 'cover' }, 'object-fill': { 'object-fit': 'fill' }, 'object-none': { 'object-fit': 'none' }, 'object-scale-down': { 'object-fit': 'scale-down' },
+            'object-bottom': { 'object-position': 'bottom' }, 'object-center': { 'object-position': 'center' }, 'object-left': { 'object-position': 'left' }, 'object-left-bottom': { 'object-position': 'left bottom' }, 'object-left-top': { 'object-position': 'left top' }, 'object-right': { 'object-position': 'right' }, 'object-right-bottom': { 'object-position': 'right bottom' }, 'object-right-top': { 'object-position': 'right top' }, 'object-top': { 'object-position': 'top' },
+            'overflow-auto': { 'overflow': 'auto' }, 'overflow-x-auto': { 'overflow-x': 'auto' }, 'overflow-y-auto': { 'overflow-y': 'auto' }, 'overflow-hidden': { 'overflow': 'hidden' }, 'overflow-x-hidden': { 'overflow-x': 'hidden' }, 'overflow-y-hidden': { 'overflow-y': 'hidden' }, 'overflow-visible': { 'overflow': 'visible' }, 'overflow-x-visible': { 'overflow-x': 'visible' }, 'overflow-y-visible': { 'overflow-y': 'visible' }, 'overflow-scroll': { 'overflow': 'scroll' }, 'overflow-x-scroll': { 'overflow-x': 'scroll' }, 'overflow-y-scroll': { 'overflow-y': 'scroll' },
+            'scrolling-touch': { '-webkit-overflow-scrolling': 'touch' }, 'scrolling-auto': { '-webkit-overflow-scrolling': 'auto' },
+            'overscroll-auto': { 'overscroll-behavior': 'auto' }, 'overscroll-y-auto': { 'overscroll-behavior-y': 'auto' }, 'overscroll-x-auto': { 'overscroll-behavior-x': 'auto' }, 'overscroll-contain': { 'overscroll-behavior': 'contain' }, 'overscroll-y-contain': { 'overscroll-behavior-y': 'contain' }, 'overscroll-x-contain': { 'overscroll-behavior-x': 'contain' }, 'overscroll-none': { 'overscroll-behavior': 'none' }, 'overscroll-y-none': { 'overscroll-behavior-y': 'none' }, 'overscroll-x-none': { 'overscroll-behavior-x': 'none' },
             'static': { 'position': 'static' }, 'fixed': { 'position': 'fixed' }, 'absolute': { 'position': 'absolute' }, 'relative': { 'position': 'relative' }, 'sticky': { 'position': 'sticky' },
+            ...insetUtilities,
             'visible': { 'visibility': 'visible' }, 'invisible': { 'visibility': 'hidden' }, 'collapse': { 'visibility': 'collapse' },
             ...Object.fromEntries([0, 10, 20, 30, 40, 50].map(i => [`z-${i}`, { 'z-index': i }])), 'z-auto': { 'z-index': 'auto' },
+
+            // --- Borders ---
+            ...borderRadiusUtilities,
+            'border': { 'border-width': '1px' }, ...Object.fromEntries([0, 2, 4, 8].map(i => [`border-${i}`, { 'border-width': `${i}px` }])),
+            'border-t': { 'border-top-width': '1px' }, ...Object.fromEntries([0, 2, 4, 8].map(i => [`border-t-${i}`, { 'border-top-width': `${i}px` }])),
+            'border-r': { 'border-right-width': '1px' }, ...Object.fromEntries([0, 2, 4, 8].map(i => [`border-r-${i}`, { 'border-right-width': `${i}px` }])),
+            'border-b': { 'border-bottom-width': '1px' }, ...Object.fromEntries([0, 2, 4, 8].map(i => [`border-b-${i}`, { 'border-bottom-width': `${i}px` }])),
+            'border-l': { 'border-left-width': '1px' }, ...Object.fromEntries([0, 2, 4, 8].map(i => [`border-l-${i}`, { 'border-left-width': `${i}px` }])),
+            'border-solid': { 'border-style': 'solid' }, 'border-dashed': { 'border-style': 'dashed' }, 'border-dotted': { 'border-style': 'dotted' }, 'border-double': { 'border-style': 'double' }, 'border-hidden': { 'border-style': 'hidden' }, 'border-none': { 'border-style': 'none' },
+            ...Object.fromEntries([0, 5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 100].map(o => [`border-opacity-${o}`, { '--tw-border-opacity': o / 100 }])),
+            // Simplified `divide` utilities. Note: These are meant to style children, which this tool doesn't support. Applying a border to the element itself.
+            'divide-x-0': { 'border-left-width': '0' }, 'divide-x-2': { 'border-left-width': '2px' }, 'divide-x-4': { 'border-left-width': '4px' }, 'divide-x-8': { 'border-left-width': '8px' }, 'divide-x': { 'border-left-width': '1px' },
+            'divide-y-0': { 'border-top-width': '0' }, 'divide-y-2': { 'border-top-width': '2px' }, 'divide-y-4': { 'border-top-width': '4px' }, 'divide-y-8': { 'border-top-width': '8px' }, 'divide-y': { 'border-top-width': '1px' },
+            'divide-x-reverse': { '--divide-x-reverse': 1 }, 'divide-y-reverse': { '--divide-y-reverse': 1 },
+            ...Object.fromEntries([0, 5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 100].map(o => [`divide-opacity-${o}`, { '--divide-opacity': o / 100 }])),
+            'divide-solid': { 'border-style': 'solid' }, 'divide-dashed': { 'border-style': 'dashed' }, 'divide-dotted': { 'border-style': 'dotted' }, 'divide-double': { 'border-style': 'double' }, 'divide-none': { 'border-style': 'none' },
+            'outline-0': { 'outline-width': '0px' }, 'outline-1': { 'outline-width': '1px' }, 'outline-2': { 'outline-width': '2px' }, 'outline-4': { 'outline-width': '4px' }, 'outline-8': { 'outline-width': '8px' },
+            'outline': { 'outline-style': 'solid' }, 'outline-dashed': { 'outline-style': 'dashed' }, 'outline-dotted': { 'outline-style': 'dotted' }, 'outline-double': { 'outline-style': 'double' },
+            'outline-none': { 'outline': '2px solid transparent', 'outline-offset': '2px' },
+            'outline-offset-0': { 'outline-offset': '0px' }, 'outline-offset-1': { 'outline-offset': '1px' }, 'outline-offset-2': { 'outline-offset': '2px' }, 'outline-offset-4': { 'outline-offset': '4px' }, 'outline-offset-8': { 'outline-offset': '8px' },
+            'ring-0': {'box-shadow': 'var(--tw-ring-inset) 0 0 0 calc(0px + var(--tw-ring-offset-width)) var(--tw-ring-color)'}, 'ring-1': {'box-shadow': 'var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color)'}, 'ring-2': {'box-shadow': 'var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color)'}, 'ring-4': {'box-shadow': 'var(--tw-ring-inset) 0 0 0 calc(4px + var(--tw-ring-offset-width)) var(--tw-ring-color)'}, 'ring-8': {'box-shadow': 'var(--tw-ring-inset) 0 0 0 calc(8px + var(--tw-ring-offset-width)) var(--tw-ring-color)'}, 'ring': {'box-shadow': 'var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color)'},
+            'ring-inset': { '--tw-ring-inset': 'inset' },
+            ...Object.fromEntries([0, 5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 100].map(o => [`ring-opacity-${o}`, { '--ring-opacity': o / 100 }])),
+            'ring-offset-0': { '--ring-offset-width': '0px', 'box-shadow': '0 0 0 var(--ring-offset-width) var(--ring-offset-color), var(--ring-shadow)'}, 'ring-offset-1': { '--ring-offset-width': '1px', 'box-shadow': '0 0 0 var(--ring-offset-width) var(--ring-offset-color), var(--ring-shadow)'}, 'ring-offset-2': { '--ring-offset-width': '2px', 'box-shadow': '0 0 0 var(--ring-offset-width) var(--ring-offset-color), var(--ring-shadow)'}, 'ring-offset-4': { '--ring-offset-width': '4px', 'box-shadow': '0 0 0 var(--ring-offset-width) var(--ring-offset-color), var(--ring-shadow)'}, 'ring-offset-8': { '--ring-offset-width': '8px', 'box-shadow': '0 0 0 var(--ring-offset-width) var(--ring-offset-color), var(--ring-shadow)'},
 
             // --- Flexbox & Grid ---
             ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`basis-${k}`, { 'flex-basis': v }])), 'basis-auto': { 'flex-basis': 'auto' }, 'basis-full': { 'flex-basis': '100%' },
@@ -221,11 +285,8 @@
             ...genSpacing('m', 'margin'), ...genXYSpacing('mx', 'margin-left', 'margin-right'), ...genXYSpacing('my', 'margin-top', 'margin-bottom'), ...genSpacing('mt', 'margin-top'), ...genSpacing('mr', 'margin-right'), ...genSpacing('mb', 'margin-bottom'), ...genSpacing('ml', 'margin-left'),
             ...genNegativeMargin('m', 'margin'), ...genNegativeMargin('mx', 'margin-left', 'margin-right'), ...genNegativeMargin('my', 'margin-top', 'margin-bottom'), ...genNegativeMargin('mt', 'margin-top'), ...genNegativeMargin('mr', 'margin-right'), ...genNegativeMargin('mb', 'margin-bottom'), ...genNegativeMargin('ml', 'margin-left'),
             'mx-auto': { 'margin-left': 'auto', 'margin-right': 'auto' },
-            // Space between elements
             ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`space-x-${k}`, {'--tw-space-x-reverse': '0', 'margin-right': `calc(${v} * var(--tw-space-x-reverse))`, 'margin-left': `calc(${v} * calc(1 - var(--tw-space-x-reverse)))` }])),
             ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`space-y-${k}`, {'--tw-space-y-reverse': '0', 'margin-top': `calc(${v} * calc(1 - var(--tw-space-y-reverse)))`, 'margin-bottom': `calc(${v} * var(--tw-space-y-reverse))` }])),
-            '-space-x-1': { '--tw-space-x-reverse': '0', 'margin-right': `calc(0.25rem * var(--tw-space-x-reverse))`, 'margin-left': `calc(0.25rem * calc(1 - var(--tw-space-x-reverse)))` }, // Example for negative space
-            '-space-y-1': { '--tw-space-y-reverse': '0', 'margin-top': `calc(0.25rem * calc(1 - var(--tw-space-y-reverse)))`, 'margin-bottom': `calc(0.25rem * var(--tw-space-y-reverse))` }, // Example for negative space
 
             // --- Sizing ---
             ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`w-${k}`, { width: v }])), 'w-auto': { 'width': 'auto' }, 'w-1/2': { 'width': '50%' }, 'w-1/3': { 'width': '33.333333%' }, 'w-2/3': { 'width': '66.666667%' }, 'w-1/4': { 'width': '25%' }, 'w-2/4': { 'width': '50%' }, 'w-3/4': { 'width': '75%' }, 'w-1/5': { 'width': '20%' }, 'w-2/5': { 'width': '40%' }, 'w-3/5': { 'width': '60%' }, 'w-4/5': { 'width': '80%' }, 'w-1/6': { 'width': '16.666667%' }, 'w-5/6': { 'width': '83.333333%' }, 'w-full': { 'width': '100%' }, 'w-screen': { 'width': '100vw' }, 'w-min': { 'width': 'min-content' }, 'w-max': { 'width': 'max-content' }, 'w-fit': { 'width': 'fit-content' },
@@ -246,7 +307,6 @@
             'leading-3': { 'line-height': '.75rem' }, 'leading-4': { 'line-height': '1rem' }, 'leading-5': { 'line-height': '1.25rem' }, 'leading-6': { 'line-height': '1.5rem' }, 'leading-7': { 'line-height': '1.75rem' }, 'leading-8': { 'line-height': '2rem' }, 'leading-9': { 'line-height': '2.25rem' }, 'leading-10': { 'line-height': '2.5rem' }, 'leading-none': { 'line-height': '1' }, 'leading-tight': { 'line-height': '1.25' }, 'leading-snug': { 'line-height': '1.375' }, 'leading-normal': { 'line-height': '1.5' }, 'leading-relaxed': { 'line-height': '1.625' }, 'leading-loose': { 'line-height': '2' },
             'list-none': { 'list-style-type': 'none' }, 'list-disc': { 'list-style-type': 'disc' }, 'list-decimal': { 'list-style-type': 'decimal' }, 'list-inside': { 'list-style-position': 'inside' }, 'list-outside': { 'list-style-position': 'outside' },
             'text-left': { 'text-align': 'left' }, 'text-center': { 'text-align': 'center' }, 'text-right': { 'text-align': 'right' }, 'text-justify': { 'text-align': 'justify' }, 'text-start': { 'text-align': 'start' }, 'text-end': { 'text-align': 'end' },
-            'text-white': { 'color': '#ffffff' }, 'text-black': { 'color': '#000000' }, 'text-transparent': { 'color': 'transparent' },
             'underline': { 'text-decoration-line': 'underline' }, 'overline': { 'text-decoration-line': 'overline' }, 'line-through': { 'text-decoration-line': 'line-through' }, 'no-underline': { 'text-decoration-line': 'none' },
             'decoration-solid': { 'text-decoration-style': 'solid' }, 'decoration-double': { 'text-decoration-style': 'double' }, 'decoration-dotted': { 'text-decoration-style': 'dotted' }, 'decoration-dashed': { 'text-decoration-style': 'dashed' }, 'decoration-wavy': { 'text-decoration-style': 'wavy' },
             'decoration-auto': { 'text-decoration-thickness': 'auto' }, 'decoration-from-font': { 'text-decoration-thickness': 'from-font' }, ...Object.fromEntries([0,1,2,4,8].map(i => [`decoration-${i}`, {'text-decoration-thickness': `${i}px`}])),
@@ -263,77 +323,39 @@
             // --- Backgrounds ---
             'bg-fixed': { 'background-attachment': 'fixed' }, 'bg-local': { 'background-attachment': 'local' }, 'bg-scroll': { 'background-attachment': 'scroll' },
             'bg-clip-border': { 'background-clip': 'border-box' }, 'bg-clip-padding': { 'background-clip': 'padding-box' }, 'bg-clip-content': { 'background-clip': 'content-box' }, 'bg-clip-text': { 'background-clip': 'text' },
+            ...Object.fromEntries([0, 5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 95, 100].map(o => [`bg-opacity-${o}`, { '--tw-bg-opacity': o / 100 }])),
+            'bg-origin-border': { 'background-origin': 'border-box' }, 'bg-origin-padding': { 'background-origin': 'padding-box' }, 'bg-origin-content': { 'background-origin': 'content-box' },
             'bg-bottom': { 'background-position': 'bottom' }, 'bg-center': { 'background-position': 'center' }, 'bg-left': { 'background-position': 'left' }, 'bg-left-bottom': { 'background-position': 'left bottom' }, 'bg-left-top': { 'background-position': 'left top' }, 'bg-right': { 'background-position': 'right' }, 'bg-right-bottom': { 'background-position': 'right bottom' }, 'bg-right-top': { 'background-position': 'right top' }, 'bg-top': { 'background-position': 'top' },
             'bg-repeat': { 'background-repeat': 'repeat' }, 'bg-no-repeat': { 'background-repeat': 'no-repeat' }, 'bg-repeat-x': { 'background-repeat': 'repeat-x' }, 'bg-repeat-y': { 'background-repeat': 'repeat-y' }, 'bg-repeat-round': { 'background-repeat': 'round' }, 'bg-repeat-space': { 'background-repeat': 'space' },
             'bg-auto': { 'background-size': 'auto' }, 'bg-cover': { 'background-size': 'cover' }, 'bg-contain': { 'background-size': 'contain' },
             'bg-none': { 'background-image': 'none' },
             'bg-gradient-to-t': { 'background-image': 'linear-gradient(to top, var(--tw-gradient-stops))' }, 'bg-gradient-to-tr': { 'background-image': 'linear-gradient(to top right, var(--tw-gradient-stops))' }, 'bg-gradient-to-r': { 'background-image': 'linear-gradient(to right, var(--tw-gradient-stops))' }, 'bg-gradient-to-br': { 'background-image': 'linear-gradient(to bottom right, var(--tw-gradient-stops))' }, 'bg-gradient-to-b': { 'background-image': 'linear-gradient(to bottom, var(--tw-gradient-stops))' }, 'bg-gradient-to-bl': { 'background-image': 'linear-gradient(to bottom left, var(--tw-gradient-stops))' }, 'bg-gradient-to-l': { 'background-image': 'linear-gradient(to left, var(--tw-gradient-stops))' }, 'bg-gradient-to-tl': { 'background-image': 'linear-gradient(to top left, var(--tw-gradient-stops))' },
-            'bg-white': { 'background-color': '#ffffff' }, 'bg-black': { 'background-color': '#000000' }, 'bg-transparent': { 'background-color': 'transparent' },
-
-            // --- Borders ---
-            ...Object.fromEntries(['', '-sm', '-md', '-lg', '-xl', '-2xl', '-3xl', '-full'].map(s => {
-                const size = { '': '0.25rem', '-sm': '0.125rem', '-md': '0.375rem', '-lg': '0.5rem', '-xl': '0.75rem', '-2xl': '1rem', '-3xl': '1.5rem', '-full': '9999px' }[s];
-                return [`rounded${s}`, { 'border-radius': size }];
-            })), 'rounded-none': { 'border-radius': '0px' },
-            ...Object.fromEntries([0, 1, 2, 4, 8].map(i => [`border-${i}`, { 'border-width': `${i}px` }])), 'border': { 'border-width': '1px' }, 'border-px': { 'border-width': '1px' },
-            ...Object.fromEntries([0, 1, 2, 4, 8].map(i => [`border-x-${i}`, { 'border-left-width': `${i}px`, 'border-right-width': `${i}px` }])), 'border-x': { 'border-left-width': '1px', 'border-right-width': '1px' },
-            ...Object.fromEntries([0, 1, 2, 4, 8].map(i => [`border-y-${i}`, { 'border-top-width': `${i}px`, 'border-bottom-width': `${i}px` }])), 'border-y': { 'border-top-width': '1px', 'border-bottom-width': '1px' },
-            ...Object.fromEntries([0, 1, 2, 4, 8].map(i => [`border-t-${i}`, { 'border-top-width': `${i}px` }])), 'border-t': { 'border-top-width': '1px' },
-            ...Object.fromEntries([0, 1, 2, 4, 8].map(i => [`border-r-${i}`, { 'border-right-width': `${i}px` }])), 'border-r': { 'border-right-width': '1px' },
-            ...Object.fromEntries([0, 1, 2, 4, 8].map(i => [`border-b-${i}`, { 'border-bottom-width': `${i}px` }])), 'border-b': { 'border-bottom-width': '1px' },
-            ...Object.fromEntries([0, 1, 2, 4, 8].map(i => [`border-l-${i}`, { 'border-left-width': `${i}px` }])), 'border-l': { 'border-left-width': '1px' },
-            'border-solid': { 'border-style': 'solid' }, 'border-dashed': { 'border-style': 'dashed' }, 'border-dotted': { 'border-style': 'dotted' }, 'border-double': { 'border-style': 'double' }, 'border-hidden': { 'border-style': 'hidden' }, 'border-none': { 'border-style': 'none' },
-            'border-white': { 'border-color': '#ffffff' }, 'border-black': { 'border-color': '#000000' }, 'border-transparent': { 'border-color': 'transparent' },
-            // Divide classes
-            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`divide-x-${k}`, { '--tw-divide-x-reverse': '0', 'border-right-width': `calc(${v} * var(--tw-divide-x-reverse))`, 'border-left-width': `calc(${v} * calc(1 - var(--tw-divide-x-reverse)))` }])),
-            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`divide-y-${k}`, { '--tw-divide-y-reverse': '0', 'border-top-width': `calc(${v} * calc(1 - var(--tw-divide-y-reverse)))`, 'border-bottom-width': `calc(${v} * var(--tw-divide-y-reverse))` }])),
-            ...Object.fromEntries(['solid', 'dashed', 'dotted', 'double', 'none'].map(s => [`divide-${s}`, { 'border-style': s }])),
-
-            // --- Rings ---
-            ...Object.fromEntries([0, 1, 2, 4, 8].map(i => [`ring-${i}`, { '--tw-ring-offset-shadow': `var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color)`, '--tw-ring-shadow': `var(--tw-ring-inset) 0 0 0 calc(${i}px + var(--tw-ring-offset-width)) var(--tw-ring-color)`, 'box-shadow': 'var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)', 'border-color': 'transparent' }])), 'ring': { '--tw-ring-offset-shadow': `var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color)`, '--tw-ring-shadow': `var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color)`, 'box-shadow': 'var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)', 'border-color': 'transparent' },
-            'ring-inset': { '--tw-ring-inset': 'inset' },
             
             // --- Effects ---
-            'shadow-sm': { 'box-shadow': '0 1px 2px 0 rgb(0 0 0 / 0.05)' }, 'shadow': { 'box-shadow': '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)' }, 'shadow-md': { 'box-shadow': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }, 'shadow-lg': { 'box-shadow': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)' }, 'shadow-xl': { 'box-shadow': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)' }, 'shadow-2xl': { 'box-shadow': '0 25px 50px -12px rgb(0 0 0 / 0.25)' }, 'shadow-inner': { 'box-shadow': 'inset 0 2px 4px 0 rgb(0 0 0 / 0.05)' }, 'shadow-none': { 'box-shadow': 'none' },
-            ...Object.fromEntries(Array.from({ length: 21 }, (_, i) => [i * 5, (i * 0.05).toFixed(2)]).map(([k, v]) => [`opacity-${k}`, { opacity: v }])),
-            'mix-blend-normal': { 'mix-blend-mode': 'normal' }, 'mix-blend-multiply': { 'mix-blend-mode': 'multiply' }, 'mix-blend-screen': { 'mix-blend-mode': 'screen' }, 'mix-blend-overlay': { 'mix-blend-mode': 'overlay' }, 'mix-blend-darken': { 'mix-blend-mode': 'darken' }, 'mix-blend-lighten': { 'mix-blend-mode': 'lighten' }, 'mix-blend-color-dodge': { 'mix-blend-mode': 'color-dodge' }, 'mix-blend-color-burn': { 'mix-blend-mode': 'color-burn' }, 'mix-blend-hard-light': { 'mix-blend-mode': 'hard-light' }, 'mix-blend-soft-light': { 'mix-blend-mode': 'soft-light' }, 'mix-blend-difference': { 'mix-blend-mode': 'difference' }, 'mix-blend-exclusion': { 'mix-blend-mode': 'exclusion' }, 'mix-blend-hue': { 'mix-blend-mode': 'hue' }, 'mix-blend-saturation': { 'mix-blend-mode': 'saturation' }, 'mix-blend-color': { 'mix-blend-mode': 'color' }, 'mix-blend-luminosity': { 'mix-blend-mode': 'luminosity' }, 'mix-blend-plus-lighter': { 'mix-blend-mode': 'plus-lighter' },
-            
-            // --- Filters ---
-            'blur-none': { 'filter': 'blur(0)' }, 'blur-sm': { 'filter': 'blur(4px)' }, 'blur': { 'filter': 'blur(8px)' }, 'blur-md': { 'filter': 'blur(12px)' }, 'blur-lg': { 'filter': 'blur(16px)' }, 'blur-xl': { 'filter': 'blur(24px)' }, 'blur-2xl': { 'filter': 'blur(40px)' }, 'blur-3xl': { 'filter': 'blur(64px)' },
-            ...Object.fromEntries([0, 50, 75, 90, 95, 100, 105, 110, 125, 150, 200].map(v => [`brightness-${v}`, { 'filter': `brightness(.${v})` }])),
-            ...Object.fromEntries([0, 50, 75, 90, 95, 100, 105, 110, 125, 150, 200].map(v => [`contrast-${v}`, { 'filter': `contrast(.${v})` }])),
-            'drop-shadow-sm': { 'filter': 'drop-shadow(0 1px 1px rgb(0 0 0 / 0.05))' }, 'drop-shadow': { 'filter': 'drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06))' }, 'drop-shadow-md': { 'filter': 'drop-shadow(0 4px 3px rgb(0 0 0 / 0.07)) drop-shadow(0 2px 2px rgb(0 0 0 / 0.06))' }, 'drop-shadow-lg': { 'filter': 'drop-shadow(0 10px 8px rgb(0 0 0 / 0.04)) drop-shadow(0 4px 3px rgb(0 0 0 / 0.1))' }, 'drop-shadow-xl': { 'filter': 'drop-shadow(0 20px 13px rgb(0 0 0 / 0.03)) drop-shadow(0 8px 5px rgb(0 0 0 / 0.08))' }, 'drop-shadow-2xl': { 'filter': 'drop-shadow(0 25px 25px rgb(0 0 0 / 0.15))' }, 'drop-shadow-none': { 'filter': 'drop-shadow(0 0 #0000)' },
-            ...Object.fromEntries([0, 100].map(v => [`grayscale-${v}`, { 'filter': `grayscale(${v}%)` }])),
-            ...Object.fromEntries([0, 50, 75, 90, 95, 100, 105, 110, 125, 150, 200].map(v => [`saturate-${v}`, { 'filter': `saturate(.${v})` }])),
-            'backdrop-blur-none': { 'backdrop-filter': 'blur(0)' }, 'backdrop-blur-sm': { 'backdrop-filter': 'blur(4px)' }, 'backdrop-blur': { 'backdrop-filter': 'blur(8px)' }, 'backdrop-blur-md': { 'backdrop-filter': 'blur(12px)' }, 'backdrop-blur-lg': { 'backdrop-filter': 'blur(16px)' }, 'backdrop-blur-xl': { 'backdrop-filter': 'blur(24px)' }, 'backdrop-blur-2xl': { 'backdrop-filter': 'blur(40px)' }, 'backdrop-blur-3xl': { 'backdrop-filter': 'blur(64px)' },
-            
+            'shadow-xs': {'box-shadow': '0 0 0 1px rgba(0, 0, 0, 0.05)'},
+            'shadow-sm': { 'box-shadow': '0 1px 2px 0 rgb(0 0 0 / 0.05)' },
+            'shadow': { 'box-shadow': '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)' },
+            'shadow-md': { 'box-shadow': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' },
+            'shadow-lg': { 'box-shadow': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)' },
+            'shadow-xl': { 'box-shadow': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)' },
+            'shadow-2xl': { 'box-shadow': '0 25px 50px -12px rgb(0 0 0 / 0.25)' },
+            'shadow-inner': { 'box-shadow': 'inset 0 2px 4px 0 rgb(0 0 0 / 0.06)' },
+            'shadow-outline': {'box-shadow': '0 0 0 3px rgba(59, 130, 246, 0.5)'},
+            'shadow-none': { 'box-shadow': 'none' },
+            ...Object.fromEntries([0, 5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 100].map(o => [`opacity-${o}`, { opacity: o / 100 }])),
+            'mix-blend-normal': { 'mix-blend-mode': 'normal' }, 'mix-blend-multiply': { 'mix-blend-mode': 'multiply' }, 'mix-blend-screen': { 'mix-blend-mode': 'screen' }, 'mix-blend-overlay': { 'mix-blend-mode': 'overlay' }, 'mix-blend-darken': { 'mix-blend-mode': 'darken' }, 'mix-blend-lighten': { 'mix-blend-mode': 'lighten' }, 'mix-blend-color-dodge': { 'mix-blend-mode': 'color-dodge' }, 'mix-blend-color-burn': { 'mix-blend-mode': 'color-burn' }, 'mix-blend-hard-light': { 'mix-blend-mode': 'hard-light' }, 'mix-blend-soft-light': { 'mix-blend-mode': 'soft-light' }, 'mix-blend-difference': { 'mix-blend-mode': 'difference' }, 'mix-blend-exclusion': { 'mix-blend-mode': 'exclusion' }, 'mix-blend-hue': { 'mix-blend-mode': 'hue' }, 'mix-blend-saturation': { 'mix-blend-mode': 'saturation' }, 'mix-blend-color': { 'mix-blend-mode': 'color' }, 'mix-blend-luminosity': { 'mix-blend-mode': 'luminosity' },
+            'bg-blend-normal': {'background-blend-mode': 'normal'}, 'bg-blend-multiply': {'background-blend-mode': 'multiply'}, 'bg-blend-screen': {'background-blend-mode': 'screen'}, 'bg-blend-overlay': {'background-blend-mode': 'overlay'}, 'bg-blend-darken': {'background-blend-mode': 'darken'}, 'bg-blend-lighten': {'background-blend-mode': 'lighten'}, 'bg-blend-color-dodge': {'background-blend-mode': 'color-dodge'}, 'bg-blend-color-burn': {'background-blend-mode': 'color-burn'}, 'bg-blend-hard-light': {'background-blend-mode': 'hard-light'}, 'bg-blend-soft-light': {'background-blend-mode': 'soft-light'}, 'bg-blend-difference': {'background-blend-mode': 'difference'}, 'bg-blend-exclusion': {'background-blend-mode': 'exclusion'}, 'bg-blend-hue': {'background-blend-mode': 'hue'}, 'bg-blend-saturation': {'background-blend-mode': 'saturation'}, 'bg-blend-color': {'background-blend-mode': 'color'}, 'bg-blend-luminosity': {'background-blend-mode': 'luminosity'},
+
             // --- Tables ---
             'border-collapse': { 'border-collapse': 'collapse' }, 'border-separate': { 'border-collapse': 'separate' },
             ...genXYSpacing('border-spacing', '--tw-border-spacing-x', '--tw-border-spacing-y'), ...genSpacing('border-spacing-x', '--tw-border-spacing-x'), ...genSpacing('border-spacing-y', '--tw-border-spacing-y'),
             'table-auto': { 'table-layout': 'auto' }, 'table-fixed': { 'table-layout': 'fixed' },
 
-            // --- Transitions & Animation ---
-            'transition-none': { 'transition-property': 'none' }, 'transition-all': { 'transition-property': 'all', 'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)', 'transition-duration': '150ms' }, 'transition': { 'transition-property': 'color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter', 'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)', 'transition-duration': '150ms' }, 'transition-colors': { 'transition-property': 'color, background-color, border-color, text-decoration-color, fill, stroke', 'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)', 'transition-duration': '150ms' }, 'transition-opacity': { 'transition-property': 'opacity', 'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)', 'transition-duration': '150ms' }, 'transition-shadow': { 'transition-property': 'box-shadow', 'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)', 'transition-duration': '150ms' }, 'transition-transform': { 'transition-property': 'transform', 'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)', 'transition-duration': '150ms' },
-            ...Object.fromEntries([75, 100, 150, 200, 300, 500, 700, 1000].map(d => [`duration-${d}`, { 'transition-duration': `${d}ms` }])),
-            'ease-linear': { 'transition-timing-function': 'linear' }, 'ease-in': { 'transition-timing-function': 'cubic-bezier(0.4, 0, 1, 1)' }, 'ease-out': { 'transition-timing-function': 'cubic-bezier(0, 0, 0.2, 1)' }, 'ease-in-out': { 'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)' },
-            ...Object.fromEntries([0, 75, 100, 150, 200, 300, 500, 700, 1000].map(d => [`delay-${d}`, { 'transition-delay': `${d}ms` }])),
-            'animate-none': { 'animation': 'none' }, 'animate-spin': { 'animation': 'spin 1s linear infinite' }, 'animate-ping': { 'animation': 'ping 1s cubic-bezier(0, 0, 0.2, 1) infinite' }, 'animate-pulse': { 'animation': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }, 'animate-bounce': { 'animation': 'bounce 1s infinite' },
-
-            // --- Transforms ---
-            'transform': { 'transform': 'translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0)) rotate(var(--tw-rotate, 0)) skewX(var(--tw-skew-x, 0)) skewY(var(--tw-skew-y, 0)) scaleX(var(--tw-scale-x, 1)) scaleY(var(--tw-scale-y, 1))' },
-            'transform-gpu': { 'transform': 'translate3d(var(--tw-translate-x, 0), var(--tw-translate-y, 0), 0) rotate(var(--tw-rotate, 0)) skewX(var(--tw-skew-x, 0)) skewY(var(--tw-skew-y, 0)) scaleX(var(--tw-scale-x, 1)) scaleY(var(--tw-scale-y, 1))' },
-            'transform-none': { 'transform': 'none' },
-            ...Object.fromEntries([0, 50, 75, 90, 95, 100, 105, 110, 125, 150].map(s => [`scale-${s}`, { '--tw-scale-x': `${s/100}`, '--tw-scale-y': `${s/100}` }])),
-            ...Object.fromEntries([0, 1, 2, 3, 6, 12, 45, 90, 180].map(r => [`rotate-${r}`, { '--tw-rotate': `${r}deg` }])),
-            ...Object.fromEntries([0, 1, 2, 3, 6, 12].map(s => [`skew-x-${s}`, { '--tw-skew-x': `${s}deg` }])), ...Object.fromEntries([0, 1, 2, 3, 6, 12].map(s => [`skew-y-${s}`, { '--tw-skew-y': `${s}deg` }])),
-            'origin-center': { 'transform-origin': 'center' }, 'origin-top': { 'transform-origin': 'top' }, 'origin-top-right': { 'transform-origin': 'top right' }, 'origin-right': { 'transform-origin': 'right' }, 'origin-bottom-right': { 'transform-origin': 'bottom right' }, 'origin-bottom': { 'transform-origin': 'bottom' }, 'origin-bottom-left': { 'transform-origin': 'bottom left' }, 'origin-left': { 'transform-origin': 'left' }, 'origin-top-left': { 'transform-origin': 'top left' },
-            
             // --- Interactivity ---
-            'accent-auto': { 'accent-color': 'auto' },
             'appearance-none': { 'appearance': 'none' },
-            'cursor-auto': { 'cursor': 'auto' }, 'cursor-default': { 'cursor': 'default' }, 'cursor-pointer': { 'cursor': 'pointer' }, 'cursor-wait': { 'cursor': 'wait' }, 'cursor-text': { 'cursor': 'text' }, 'cursor-move': { 'cursor': 'move' }, 'cursor-help': { 'cursor': 'help' }, 'cursor-not-allowed': { 'cursor': 'not-allowed' }, 'cursor-none': { 'cursor': 'none' }, 'cursor-context-menu': { 'cursor': 'context-menu' }, 'cursor-progress': { 'cursor': 'progress' }, 'cursor-cell': { 'cursor': 'cell' }, 'cursor-crosshair': { 'cursor': 'crosshair' }, 'cursor-vertical-text': { 'cursor': 'vertical-text' }, 'cursor-alias': { 'cursor': 'alias' }, 'cursor-copy': { 'cursor': 'copy' }, 'cursor-no-drop': { 'cursor': 'no-drop' }, 'cursor-grab': { 'cursor': 'grab' }, 'cursor-grabbing': { 'cursor': 'grabbing' },
+            'cursor-auto': {'cursor': 'auto'}, 'cursor-default': {'cursor': 'default'}, 'cursor-pointer': {'cursor': 'pointer'}, 'cursor-wait': {'cursor': 'wait'}, 'cursor-text': {'cursor': 'text'}, 'cursor-move': {'cursor': 'move'}, 'cursor-help': {'cursor': 'help'}, 'cursor-not-allowed': {'cursor': 'not-allowed'}, 'cursor-none': {'cursor': 'none'}, 'cursor-context-menu': {'cursor': 'context-menu'}, 'cursor-progress': {'cursor': 'progress'}, 'cursor-cell': {'cursor': 'cell'}, 'cursor-crosshair': {'cursor': 'crosshair'}, 'cursor-vertical-text': {'cursor': 'vertical-text'}, 'cursor-alias': {'cursor': 'alias'}, 'cursor-copy': {'cursor': 'copy'}, 'cursor-no-drop': {'cursor': 'no-drop'}, 'cursor-grab': {'cursor': 'grab'}, 'cursor-grabbing': {'cursor': 'grabbing'}, 'cursor-all-scroll': {'cursor': 'all-scroll'}, 'cursor-col-resize': {'cursor': 'col-resize'}, 'cursor-row-resize': {'cursor': 'row-resize'}, 'cursor-n-resize': {'cursor': 'n-resize'}, 'cursor-e-resize': {'cursor': 'e-resize'}, 'cursor-s-resize': {'cursor': 's-resize'}, 'cursor-w-resize': {'cursor': 'w-resize'}, 'cursor-ne-resize': {'cursor': 'ne-resize'}, 'cursor-nw-resize': {'cursor': 'nw-resize'}, 'cursor-se-resize': {'cursor': 'se-resize'}, 'cursor-sw-resize': {'cursor': 'sw-resize'}, 'cursor-ew-resize': {'cursor': 'ew-resize'}, 'cursor-ns-resize': {'cursor': 'ns-resize'}, 'cursor-nesw-resize': {'cursor': 'nesw-resize'}, 'cursor-nwse-resize': {'cursor': 'nwse-resize'}, 'cursor-zoom-in': {'cursor': 'zoom-in'}, 'cursor-zoom-out': {'cursor': 'zoom-out'},
             'pointer-events-none': { 'pointer-events': 'none' }, 'pointer-events-auto': { 'pointer-events': 'auto' },
-            'resize-none': { 'resize': 'none' }, 'resize-y': { 'resize': 'vertical' }, 'resize-x': { 'resize': 'horizontal' }, 'resize': { 'resize': 'both' },
+            'resize-none': { 'resize': 'none' }, 'resize': { 'resize': 'both' }, 'resize-y': { 'resize': 'vertical' }, 'resize-x': { 'resize': 'horizontal' },
             'scroll-auto': { 'scroll-behavior': 'auto' }, 'scroll-smooth': { 'scroll-behavior': 'smooth' },
             ...genSpacing('scroll-m', 'scroll-margin'), ...genXYSpacing('scroll-mx', 'scroll-margin-left', 'scroll-margin-right'), ...genXYSpacing('scroll-my', 'scroll-margin-top', 'scroll-margin-bottom'), ...genSpacing('scroll-mt', 'scroll-margin-top'), ...genSpacing('scroll-mr', 'scroll-margin-right'), ...genSpacing('scroll-mb', 'scroll-margin-bottom'), ...genSpacing('scroll-ml', 'scroll-margin-left'),
             ...genSpacing('scroll-p', 'scroll-padding'), ...genXYSpacing('scroll-px', 'scroll-padding-left', 'scroll-padding-right'), ...genXYSpacing('scroll-py', 'scroll-padding-top', 'scroll-padding-bottom'), ...genSpacing('scroll-pt', 'scroll-padding-top'), ...genSpacing('scroll-pr', 'scroll-padding-right'), ...genSpacing('scroll-pb', 'scroll-padding-bottom'), ...genSpacing('scroll-pl', 'scroll-padding-left'),
@@ -344,29 +366,24 @@
             'touch-auto': { 'touch-action': 'auto' }, 'touch-none': { 'touch-action': 'none' }, 'touch-pan-x': { 'touch-action': 'pan-x' }, 'touch-pan-left': { 'touch-action': 'pan-left' }, 'touch-pan-right': { 'touch-action': 'pan-right' }, 'touch-pan-y': { 'touch-action': 'pan-y' }, 'touch-pan-up': { 'touch-action': 'pan-up' }, 'touch-pan-down': { 'touch-action': 'pan-down' }, 'touch-pinch-zoom': { 'touch-action': 'pinch-zoom' }, 'touch-manipulation': { 'touch-action': 'manipulation' },
             'select-none': { 'user-select': 'none' }, 'select-text': { 'user-select': 'text' }, 'select-all': { 'user-select': 'all' }, 'select-auto': { 'user-select': 'auto' },
             'will-change-auto': { 'will-change': 'auto' }, 'will-change-scroll': { 'will-change': 'scroll-position' }, 'will-change-contents': { 'will-change': 'contents' }, 'will-change-transform': { 'will-change': 'transform' },
-
-            // --- SVG ---
-            ...Object.fromEntries([0, 1, 2].map(i => [`stroke-${i}`, { 'stroke-width': i }])),
         };
 
-        const sampleHtml = `<body class="p-8 bg-slate-900">
-  <a href="#" class="text-center rounded-lg px-4 py-2 bg-indigo-500/10 text-indigo-400 ring-1 ring-inset ring-indigo-500/20">
-    <span class="sr-only">Link to somewhere</span>
-    Click Me
-  </a>
-  <div class="mt-4">
-    <p class="text-sm font-bold leading-tight text-gray-300 underline decoration-dotted decoration-2 underline-offset-2">This is some text.</p>
+        const sampleHtml = `<div class="p-8">
+  <div class="grid gap-8 items-start justify-center">
+    <div class="relative group">
+      <div class="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
+      <button class="relative px-7 py-4 bg-black rounded-lg leading-none flex items-center divide-x divide-gray-600">
+        <span class="flex items-center space-x-5">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-pink-600 -rotate-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+          </svg>
+          <span class="pr-6 text-gray-100">Vaporwave</span>
+        </span>
+        <span class="pl-6 text-indigo-400 group-hover:text-gray-100 transition duration-200">Button →</span>
+      </button>
+    </div>
   </div>
-  <div class="flex items-center justify-center space-x-4 mt-6">
-    <button class="bg-blue-600 px-3 py-1.5 rounded-md text-white font-medium text-sm hover:bg-blue-700 transition-colors">Button</button>
-    <span class="inline-flex items-center rounded-full bg-green-500/10 px-3 py-1 text-xs font-medium leading-4 text-green-400 ring-1 ring-inset ring-green-500/20">New</span>
-  </div>
-  <div class="grid grid-cols-3 gap-3 mt-6">
-    <div class="aspect-square bg-purple-500/10 rounded-xl flex items-center justify-center text-center text-xs text-purple-300 ring-1 ring-purple-500/20">Box 1</div>
-    <div class="aspect-square bg-rose-500/10 rounded-xl flex items-center justify-center text-center text-xs text-rose-300 ring-1 ring-rose-500/20">Box 2</div>
-    <div class="aspect-square bg-amber-500/10 rounded-xl flex items-center justify-center text-center text-xs text-amber-300 ring-1 ring-amber-500/20">Box 3</div>
-  </div>
-</body>`;
+</div>`;
         
         const htmlInput = document.getElementById('html-input');
         const jsonOutput = document.getElementById('json-output');
@@ -393,7 +410,7 @@
             c = '0x' + c.join('');
             return `rgba(${[(c>>16)&255, (c>>8)&255, c&255].join(',')},${alpha})`;
         }
-
+        
         function parseTailwind(classString) {
             const style = {};
             const variants = [];
@@ -401,8 +418,8 @@
 
             const classes = classString.split(/\s+/).filter(c => c);
             
-            const responsivePrefixes = { 'sm': '40rem', 'md': '48rem', 'lg': '64rem', 'xl': '80rem', '2xl': '96rem' };
-            const statePrefixes = ['hover', 'focus', 'active', 'dark', 'disabled', 'placeholder', 'first', 'last', 'odd', 'even', 'visited', 'checked', 'focus-within', 'focus-visible'];
+            const responsivePrefixes = { 'sm': '640px', 'md': '768px', 'lg': '1024px', 'xl': '1280px', '2xl': '1536px' };
+            const statePrefixes = ['hover', 'focus', 'active', 'dark', 'disabled', 'placeholder', 'first', 'last', 'odd', 'even', 'visited', 'checked', 'focus-within', 'focus-visible', 'group-hover'];
             const arbitraryValueRegex = /(.+?)-\[(.+)\]/;
 
             for (let className of classes) {
@@ -435,29 +452,22 @@
                 } else {
                      const match = baseClass.match(arbitraryValueRegex);
                      if (match) {
-                        const prop = match[1];
-                        const value = match[2].replace(/_/g, ' ');
-                        // Map common prefixes to CSS properties. If not found, assume it's a direct CSS property.
-                        const cssPropMap = { 'bg': 'background-color', 'w': 'width', 'h': 'height', 'p': 'padding', 'm': 'margin', 'text': 'color', 'border': 'border-color', 'rounded': 'border-radius', 'shadow': 'box-shadow', 'font': 'font-weight', 'leading': 'line-height', 'tracking': 'letter-spacing', 'resize': 'resize', 'select': 'user-select', 'text-opacity': 'color', 'bg-opacity': 'background-color', 'decoration': 'text-decoration-thickness', 'underline-offset': 'text-underline-offset', 'divide': 'border-width' };
-                        const cssProp = cssPropMap[prop] || prop; // Use mapped prop or the prop itself
-                        css[cssProp] = value;
-                    } else if (tailwindMap[baseClass]) {
-                        css = { ...tailwindMap[baseClass] };
-                    } else {
-                        // If the class is not found in the map and not an arbitrary value, skip it.
-                        continue; 
-                    }
+                         const prop = match[1];
+                         const value = match[2].replace(/_/g, ' ');
+                         const cssPropMap = { 'bg': 'background-color', 'w': 'width', 'h': 'height', 'p': 'padding', 'm': 'margin', 'text': 'color', 'border': 'border-color' };
+                         const cssProp = cssPropMap[prop] || prop;
+                         css[cssProp] = value;
+                     } else if (tailwindMap[baseClass]) {
+                         css = { ...tailwindMap[baseClass] };
+                     } else {
+                         continue; 
+                     }
                 }
 
                 if (Object.keys(css).length === 0) continue;
 
                 if (isImportant) {
-                    Object.keys(css).forEach(key => {
-                        // Ensure not to double-apply !important if it's already there (e.g., from previous processing)
-                        if (!String(css[key]).endsWith('!important')) {
-                            css[key] = `${css[key]} !important`;
-                        }
-                    });
+                    Object.keys(css).forEach(key => css[key] = `${css[key]} !important`);
                 }
 
                 if (!variantKey) {
@@ -485,8 +495,7 @@
         }
 
         function processNode(domNode, nodes) {
-            // Skip empty text nodes, comment nodes, and script tags that we don't want to include in the JSON structure
-            if ((domNode.nodeType === 3 && !domNode.nodeValue.trim()) || domNode.nodeType === 8 || (domNode.nodeType === 1 && domNode.tagName?.toLowerCase() === 'script')) {
+            if ((domNode.nodeType === 3 && !domNode.nodeValue.trim()) || domNode.nodeType === 8 || domNode.tagName?.toLowerCase() === 'style' || domNode.tagName?.toLowerCase() === 'script') {
                 return null;
             }
 
@@ -495,63 +504,40 @@
             const tagName = domNode.tagName ? domNode.tagName.toLowerCase() : null;
 
             if (domNode.nodeType === 1) { // Element node
-                // Handle <style> tag specifically to capture its content
-                if (tagName === 'style') {
-                    nodeData = {
-                        type: 'element',
-                        tag: 'style',
-                        attrs: {}, // Style tags don't usually have attributes we need to parse
-                        children: []
-                    };
-                    const styleContent = domNode.innerHTML;
-                    if (styleContent.trim()) {
-                        const textNodeId = crypto.randomUUID();
-                        // Store the style content as a text node within the style element
-                        nodes[textNodeId] = { type: 'text', value: { type: 'value', value: styleContent.trim() } };
-                        nodeData.children.push(textNodeId);
-                    }
-                    nodes[id] = nodeData;
-                    return id;
-                }
-                
                 const classNameString = (typeof domNode.className === 'object' && domNode.className.baseVal !== undefined)
                     ? domNode.className.baseVal
                     : domNode.className;
 
                 const { style, variants } = parseTailwind(classNameString || '');
                 
-                // Provide default styles that are common or implied by Tailwind's structure
-                const defaultStyles = { 'display': 'block', 'border-style': 'solid', 'border-width': '0' };
+                const defaultStyles = { 'flex-direction': 'row', 'display': 'block', 'border-style': 'solid', 'border-width': '0' };
                 
                 nodeData = {
                     type: 'element',
-                    tag: tagName === 'body' ? 'div' : tagName, // Treat 'body' tag as a 'div' for consistency
-                    classes: {}, // This could be populated if we wanted to store the raw class string, but it's redundant with `style` and `variants`
+                    tag: tagName === 'body' ? 'div' : tagName, // Convert body to div
+                    classes: {},
                     attrs: {},
-                    events: {}, // Placeholder for event handlers if needed later
-                    style: {...defaultStyles, ...style}, // Merge defaults with parsed styles
-                    styleVariables: {}, // Placeholder for CSS variables if needed
+                    events: {},
+                    style: {...defaultStyles, ...style},
+                    styleVariables: {},
                     variants: variants,
                     children: []
                 };
 
-                // Parse attributes, excluding 'class' and 'style' as they are handled separately
                 for (const attr of domNode.attributes) {
                     if (attr.name !== 'class' && attr.name !== 'style') {
                         nodeData.attrs[attr.name] = { type: 'value', value: attr.value };
                     }
                 }
                 
-                // Directly apply inline styles if they exist on the element
                 if (domNode.style && domNode.style.cssText) {
                     const inlineStyles = domNode.style.cssText.split(';').filter(s => s.trim());
                     inlineStyles.forEach(s => {
                         const [key, value] = s.split(':').map(p => p.trim());
-                        if (key && value) nodeData.style[key] = value; // Merge inline styles, potentially overwriting parsed ones if they conflict
+                        if (key && value) nodeData.style[key] = value;
                     });
                 }
                 
-                // Recursively process child nodes
                 for (const child of domNode.childNodes) {
                     const childId = processNode(child, nodes);
                     if (childId) nodeData.children.push(childId);
@@ -580,42 +566,19 @@
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
                 
-                let rootElement = null;
-
-                // Determine the root element to process.
-                // This handles cases where the input might be a fragment, a full HTML document, or just a body content.
-                if (doc.body && doc.body.childNodes.length > 0) {
-                    // If the body contains multiple elements or text nodes, use the body itself as the root fragment.
-                    // If it contains a single element (and not a script/style), use that element as root.
-                    let childNodesToProcess = Array.from(doc.body.childNodes);
-                    
-                    // If there's only one child and it's an element, consider it the primary root
-                    if (childNodesToProcess.length === 1 && childNodesToProcess[0].nodeType === 1) {
-                        rootElement = childNodesToProcess[0];
-                    } else {
-                        // Otherwise, create a temporary wrapper to hold all body content
-                        const tempWrapper = document.createElement('div');
-                        childNodesToProcess.forEach(child => {
-                            // Clone nodes to avoid modifying the original parsed document structure if it's used elsewhere
-                            tempWrapper.appendChild(child.cloneNode(true));
-                        });
-                        rootElement = tempWrapper;
-                    }
-                } else if (doc.head && doc.head.childNodes.length > 0) {
-                     // Fallback to head if body is empty but head has content (rare case for fragments)
-                    const tempWrapper = document.createElement('div');
-                    Array.from(doc.head.childNodes).forEach(child => {
-                         // Only process element nodes and text nodes from head, skip script/style tags directly
-                        if (child.nodeType === 1 && !['SCRIPT', 'STYLE'].includes(child.tagName?.toUpperCase())) {
-                             tempWrapper.appendChild(child.cloneNode(true));
-                        } else if (child.nodeType === 3) {
-                            tempWrapper.appendChild(child.cloneNode(true));
-                        }
-                    });
-                    rootElement = tempWrapper;
+                let rootElement;
+                
+                // Handle case where user pastes a single element vs a fragment
+                if (doc.body.children.length === 1 && !['STYLE', 'SCRIPT'].includes(doc.body.firstElementChild.tagName)) {
+                    rootElement = doc.body.firstElementChild;
                 } else {
-                    // If even head is empty, create a simple div
-                    rootElement = document.createElement('div');
+                     const tempWrapper = document.createElement('div');
+                     Array.from(doc.body.childNodes).forEach(child => {
+                         if (child.nodeType !== 8 && child.tagName?.toLowerCase() !== 'script') {
+                             tempWrapper.appendChild(child.cloneNode(true));
+                         }
+                     });
+                     rootElement = tempWrapper;
                 }
 
                 const nodes = {};
@@ -623,11 +586,8 @@
                 
                 if (rootId) {
                     const rootNodeData = nodes[rootId];
-                    delete nodes[rootId]; // Remove the temporary root from the 'nodes' map
-                    nodes['root'] = rootNodeData; // Assign the main processed element to the 'root' key
-                } else {
-                    // If no root element was processed (e.g., input was just whitespace or comments)
-                    nodes['root'] = { type: 'element', tag: 'div', children: [] };
+                    delete nodes[rootId];
+                    nodes['root'] = rootNodeData;
                 }
 
                 const finalJson = { type: 'nodes', nodes: nodes };
@@ -640,25 +600,23 @@
                 outputPlaceholder.style.display = 'none';
             }
         }
-
+        
         function showToast(message, type = 'success') {
             toastMessage.textContent = message;
             toast.classList.remove('opacity-0');
-            // Clear previous background colors and apply the new one based on type
-            toast.className = toast.className.replace(/\bbg-(red|gray)-\d00\b/g, '');
+            toast.className = toast.className.replace(/bg-(red|gray)-[0-9]+/g, '');
             toast.classList.add(type === 'error' ? 'bg-red-600' : 'bg-gray-800');
-            // Show the toast for a few seconds
             setTimeout(() => toast.classList.add('opacity-0'), 2500);
         }
 
         // --- Event Listeners ---
         convertBtn.addEventListener('click', convert);
-
+        
         pasteSampleBtn.addEventListener('click', () => {
             htmlInput.value = sampleHtml;
             convert();
         });
-
+        
         pasteFromClipboardBtn.addEventListener('click', async () => {
             try {
                 const text = await navigator.clipboard.readText();
@@ -685,8 +643,8 @@
                 });
             }
         });
-
-        // Initial conversion on load to display the sample data
+        
+        // Initial conversion on load
         pasteSampleBtn.click();
     </script>
 </body>
