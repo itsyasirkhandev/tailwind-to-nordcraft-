@@ -269,7 +269,7 @@
             'grid-flow-row': { 'grid-auto-flow': 'row' }, 'grid-flow-col': { 'grid-auto-flow': 'column' }, 'grid-flow-dense': { 'grid-auto-flow': 'dense' }, 'grid-flow-row-dense': { 'grid-auto-flow': 'row dense' }, 'grid-flow-col-dense': { 'grid-auto-flow': 'column dense' },
             'auto-cols-auto': { 'grid-auto-columns': 'auto' }, 'auto-cols-min': { 'grid-auto-columns': 'min-content' }, 'auto-cols-max': { 'grid-auto-columns': 'max-content' }, 'auto-cols-fr': { 'grid-auto-columns': 'minmax(0, 1fr)' },
             'auto-rows-auto': { 'grid-auto-rows': 'auto' }, 'auto-rows-min': { 'grid-auto-rows': 'min-content' }, 'auto-rows-max': { 'grid-auto-rows': 'max-content' }, 'auto-rows-fr': { 'grid-auto-rows': 'minmax(0, 1fr)' },
-            ...genXYSpacing('gap', 'column-gap', 'row-gap'), ...genSpacing('gap-x', 'column-gap'), ...genSpacing('gap-y', 'row-gap'),
+            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`gap-${k}`, { 'column-gap': v, 'row-gap': v }])), ...genSpacing('gap-x', 'column-gap'), ...genSpacing('gap-y', 'row-gap'),
             'justify-normal': {'justify-content': 'normal'}, 'justify-start': { 'justify-content': 'flex-start' }, 'justify-end': { 'justify-content': 'flex-end' }, 'justify-center': { 'justify-content': 'center' }, 'justify-between': { 'justify-content': 'space-between' }, 'justify-around': { 'justify-content': 'space-around' }, 'justify-evenly': { 'justify-content': 'space-evenly' }, 'justify-stretch': { 'justify-content': 'stretch' },
             'justify-items-start': { 'justify-items': 'start' }, 'justify-items-end': { 'justify-items': 'end' }, 'justify-items-center': { 'justify-items': 'center' }, 'justify-items-stretch': { 'justify-items': 'stretch' },
             'justify-self-auto': { 'justify-self': 'auto' }, 'justify-self-start': { 'justify-self': 'start' }, 'justify-self-end': { 'justify-self': 'end' }, 'justify-self-center': { 'justify-self': 'center' }, 'justify-self-stretch': { 'justify-self': 'stretch' },
@@ -339,7 +339,7 @@
             'shadow-lg': { 'box-shadow': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)' },
             'shadow-xl': { 'box-shadow': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)' },
             'shadow-2xl': { 'box-shadow': '0 25px 50px -12px rgb(0 0 0 / 0.25)' },
-            'shadow-inner': { 'box-shadow': 'inset 0 2px 4px 0 rgb(0 0 0 / 0.06)' },
+            'shadow-inner': { 'box-shadow': 'inset 0 2px 4px 0 rgb(0 0 0 / 0.05)' },
             'shadow-outline': {'box-shadow': '0 0 0 3px rgba(59, 130, 246, 0.5)'},
             'shadow-none': { 'box-shadow': 'none' },
             ...Object.fromEntries([0, 5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 100].map(o => [`opacity-${o}`, { opacity: o / 100 }])),
@@ -368,21 +368,22 @@
             'will-change-auto': { 'will-change': 'auto' }, 'will-change-scroll': { 'will-change': 'scroll-position' }, 'will-change-contents': { 'will-change': 'contents' }, 'will-change-transform': { 'will-change': 'transform' },
         };
 
-        const sampleHtml = `<div class="p-8">
-  <div class="grid gap-8 items-start justify-center">
-    <div class="relative group">
-      <div class="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
-      <button class="relative px-7 py-4 bg-black rounded-lg leading-none flex items-center divide-x divide-gray-600">
-        <span class="flex items-center space-x-5">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-pink-600 -rotate-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-          </svg>
-          <span class="pr-6 text-gray-100">Vaporwave</span>
-        </span>
-        <span class="pl-6 text-indigo-400 group-hover:text-gray-100 transition duration-200">Button →</span>
-      </button>
-    </div>
-  </div>
+        const sampleHtml = `<!-- This div has no display class, so it will default to flex column -->
+<div class="p-4 bg-gray-800 rounded-lg space-y-2">
+  <div class="bg-indigo-500 text-white p-2 rounded">Default Flex Column - Child 1</div>
+  <div class="bg-pink-500 text-white p-2 rounded">Default Flex Column - Child 2</div>
+</div>
+
+<!-- This div explicitly uses 'grid', so it will override the default -->
+<div class="grid grid-cols-2 gap-4 mt-4 p-4 bg-gray-800 rounded-lg">
+  <div class="bg-emerald-500 text-white p-2 rounded">Grid Child 1</div>
+  <div class="bg-sky-500 text-white p-2 rounded">Grid Child 2</div>
+</div>
+
+<!-- This div explicitly uses 'flex' and 'flex-row' -->
+<div class="flex flex-row gap-4 mt-4 p-4 bg-gray-800 rounded-lg">
+  <div class="bg-red-500 text-white p-2 rounded">Flex Row Child 1</div>
+  <div class="bg-yellow-500 text-white p-2 rounded">Flex Row Child 2</div>
 </div>`;
         
         const htmlInput = document.getElementById('html-input');
@@ -495,7 +496,6 @@
                 const hasGap = 'column-gap' in styleObject || 'row-gap' in styleObject;
                 if (!hasGap) return;
 
-                // The effective display is the variant's display, or the base display if the variant doesn't set one.
                 const effectiveDisplay = styleObject.display || baseStyleContext.display;
                 const isFlexOrGrid = effectiveDisplay && (effectiveDisplay.includes('flex') || effectiveDisplay.includes('grid'));
                 
@@ -505,10 +505,7 @@
                 }
             };
 
-            // Clean the base style first
-            cleanGaps(style);
-            
-            // Clean the variants, using the final base style as context
+            cleanGaps(style, style); 
             variants.forEach(variant => {
                 cleanGaps(variant.style, style);
             });
@@ -532,15 +529,30 @@
 
                 const { style, variants } = parseTailwind(classNameString || '');
                 
-                const defaultStyles = { 'flex-direction': 'row', 'display': 'block', 'border-style': 'solid', 'border-width': '0' };
+                // --- Default Style Logic ---
+                // Start with universal defaults
+                const finalStyle = {
+                    'border-style': 'solid',
+                    'border-width': '0',
+                    ...style // Let parsed styles override universal defaults
+                };
+
+                // Apply layout defaults ONLY if not specified by a class
+                if (!style.display) {
+                    finalStyle.display = 'flex';
+                    finalStyle['flex-direction'] = 'column';
+                } else if (style.display.includes('flex') && !style['flex-direction']) {
+                    // If 'flex' is used without a direction, default to 'row' (browser standard)
+                    finalStyle['flex-direction'] = 'row';
+                }
                 
                 nodeData = {
                     type: 'element',
-                    tag: tagName === 'body' ? 'div' : tagName, // Convert body to div
+                    tag: tagName === 'body' ? 'div' : tagName,
                     classes: {},
                     attrs: {},
                     events: {},
-                    style: {...defaultStyles, ...style},
+                    style: finalStyle, // Use the final, computed style object
                     styleVariables: {},
                     variants: variants,
                     children: []
