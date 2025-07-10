@@ -189,7 +189,7 @@
             insetUtilities[`bottom-${key}`] = { 'bottom': value };
             insetUtilities[`left-${key}`] = { 'left': value };
 
-            if (value !== 'auto') {
+            if (value !== 'auto' && value !=='0px') {
                  insetUtilities[`-inset-${key}`] = { 'top': negValue, 'right': negValue, 'bottom': negValue, 'left': negValue };
                  insetUtilities[`-inset-x-${key}`] = { 'left': negValue, 'right': negValue };
                  insetUtilities[`-inset-y-${key}`] = { 'top': negValue, 'bottom': negValue };
@@ -269,7 +269,7 @@
             'grid-flow-row': { 'grid-auto-flow': 'row' }, 'grid-flow-col': { 'grid-auto-flow': 'column' }, 'grid-flow-dense': { 'grid-auto-flow': 'dense' }, 'grid-flow-row-dense': { 'grid-auto-flow': 'row dense' }, 'grid-flow-col-dense': { 'grid-auto-flow': 'column dense' },
             'auto-cols-auto': { 'grid-auto-columns': 'auto' }, 'auto-cols-min': { 'grid-auto-columns': 'min-content' }, 'auto-cols-max': { 'grid-auto-columns': 'max-content' }, 'auto-cols-fr': { 'grid-auto-columns': 'minmax(0, 1fr)' },
             'auto-rows-auto': { 'grid-auto-rows': 'auto' }, 'auto-rows-min': { 'grid-auto-rows': 'min-content' }, 'auto-rows-max': { 'grid-auto-rows': 'max-content' }, 'auto-rows-fr': { 'grid-auto-rows': 'minmax(0, 1fr)' },
-            ...genSpacing('gap', 'gap'), ...genSpacing('gap-x', 'column-gap'), ...genSpacing('gap-y', 'row-gap'),
+            ...genXYSpacing('gap', 'column-gap', 'row-gap'), ...genSpacing('gap-x', 'column-gap'), ...genSpacing('gap-y', 'row-gap'),
             'justify-normal': {'justify-content': 'normal'}, 'justify-start': { 'justify-content': 'flex-start' }, 'justify-end': { 'justify-content': 'flex-end' }, 'justify-center': { 'justify-content': 'center' }, 'justify-between': { 'justify-content': 'space-between' }, 'justify-around': { 'justify-content': 'space-around' }, 'justify-evenly': { 'justify-content': 'space-evenly' }, 'justify-stretch': { 'justify-content': 'stretch' },
             'justify-items-start': { 'justify-items': 'start' }, 'justify-items-end': { 'justify-items': 'end' }, 'justify-items-center': { 'justify-items': 'center' }, 'justify-items-stretch': { 'justify-items': 'stretch' },
             'justify-self-auto': { 'justify-self': 'auto' }, 'justify-self-start': { 'justify-self': 'start' }, 'justify-self-end': { 'justify-self': 'end' }, 'justify-self-center': { 'justify-self': 'center' }, 'justify-self-stretch': { 'justify-self': 'stretch' },
@@ -413,7 +413,7 @@
         
         function parseTailwind(classString) {
             const style = {};
-            const variants = [];
+            let variants = [];
             const groupedVariants = {};
 
             const classes = classString.split(/\s+/).filter(c => c);
@@ -436,7 +436,6 @@
 
                 let css = {};
                 
-                // Handle opacity modifier like 'bg-indigo-500/10'
                 if (baseClass.includes('/') && !baseClass.startsWith('[')) {
                     const [classWithoutAlpha, alpha] = baseClass.split('/');
                     const colorUtility = tailwindMap[classWithoutAlpha];
@@ -490,6 +489,29 @@
                 });
                 variants.push(variant);
             }
+
+            // --- Post-processing to ensure gap is only applied to flex/grid containers ---
+            const cleanGaps = (styleObject, baseStyleContext = {}) => {
+                const hasGap = 'column-gap' in styleObject || 'row-gap' in styleObject;
+                if (!hasGap) return;
+
+                // The effective display is the variant's display, or the base display if the variant doesn't set one.
+                const effectiveDisplay = styleObject.display || baseStyleContext.display;
+                const isFlexOrGrid = effectiveDisplay && (effectiveDisplay.includes('flex') || effectiveDisplay.includes('grid'));
+                
+                if (!isFlexOrGrid) {
+                    delete styleObject['column-gap'];
+                    delete styleObject['row-gap'];
+                }
+            };
+
+            // Clean the base style first
+            cleanGaps(style);
+            
+            // Clean the variants, using the final base style as context
+            variants.forEach(variant => {
+                cleanGaps(variant.style, style);
+            });
 
             return { style, variants };
         }
