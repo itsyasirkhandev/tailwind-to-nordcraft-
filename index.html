@@ -367,24 +367,6 @@
             'select-none': { 'user-select': 'none' }, 'select-text': { 'user-select': 'text' }, 'select-all': { 'user-select': 'all' }, 'select-auto': { 'user-select': 'auto' },
             'will-change-auto': { 'will-change': 'auto' }, 'will-change-scroll': { 'will-change': 'scroll-position' }, 'will-change-contents': { 'will-change': 'contents' }, 'will-change-transform': { 'will-change': 'transform' },
         };
-
-        const sampleHtml = `<!-- This div has no display class, so it will default to flex column -->
-<div class="p-4 bg-gray-800 rounded-lg space-y-2">
-  <div class="bg-indigo-500 text-white p-2 rounded">Default Flex Column - Child 1</div>
-  <div class="bg-pink-500 text-white p-2 rounded">Default Flex Column - Child 2</div>
-</div>
-
-<!-- This div explicitly uses 'grid', so it will override the default -->
-<div class="grid grid-cols-2 gap-4 mt-4 p-4 bg-gray-800 rounded-lg">
-  <div class="bg-emerald-500 text-white p-2 rounded">Grid Child 1</div>
-  <div class="bg-sky-500 text-white p-2 rounded">Grid Child 2</div>
-</div>
-
-<!-- This div explicitly uses 'flex' and 'flex-row' -->
-<div class="flex flex-row gap-4 mt-4 p-4 bg-gray-800 rounded-lg">
-  <div class="bg-red-500 text-white p-2 rounded">Flex Row Child 1</div>
-  <div class="bg-yellow-500 text-white p-2 rounded">Flex Row Child 2</div>
-</div>`;
         
         const htmlInput = document.getElementById('html-input');
         const jsonOutput = document.getElementById('json-output');
@@ -412,6 +394,31 @@
             return `rgba(${[(c>>16)&255, (c>>8)&255, c&255].join(',')},${alpha})`;
         }
         
+        // Maps Tailwind prefixes to the desired JSON keys for variants.
+        const pseudoClassMap = {
+            'hover': 'hover',
+            'active': 'active',
+            'focus-visible': 'focus-visible',
+            'disabled': 'disabled',
+            'focus': 'focus',
+            'focus-within': 'focus-within',
+            'even': 'nth-child(even)',
+            'odd': 'nth-child(odd)',
+            'checked': 'checked',
+            'first': 'first-child',
+            'last': 'last-child',
+            'invalid': 'invalid',
+            'empty': 'empty',
+            'popover-open': 'popover-open',
+            'autofill': 'autofill',
+            'visited': 'visited',
+            'required': 'required',
+            'valid': 'valid',
+            'placeholder': 'placeholder',
+            'group-hover': 'group-hover',
+            'dark': 'dark'
+        };
+
         function parseTailwind(classString) {
             const style = {};
             let variants = [];
@@ -420,7 +427,6 @@
             const classes = classString.split(/\s+/).filter(c => c);
             
             const responsivePrefixes = { 'sm': '640px', 'md': '768px', 'lg': '1024px', 'xl': '1280px', '2xl': '1536px' };
-            const statePrefixes = ['hover', 'focus', 'active', 'dark', 'disabled', 'placeholder', 'first', 'last', 'odd', 'even', 'visited', 'checked', 'focus-within', 'focus-visible', 'group-hover'];
             const arbitraryValueRegex = /(.+?)-\[(.+)\]/;
 
             for (let className of classes) {
@@ -481,11 +487,13 @@
             for (const key in groupedVariants) {
                 const variant = { style: groupedVariants[key] };
                 const prefixes = key.split(':');
+                
                 prefixes.forEach(prefix => {
                     if (responsivePrefixes[prefix]) {
                         variant.mediaQuery = { 'min-width': responsivePrefixes[prefix] };
-                    } else if (statePrefixes.includes(prefix)) {
-                        variant[prefix] = true;
+                    } else if (pseudoClassMap[prefix]) {
+                        const jsonKey = pseudoClassMap[prefix];
+                        variant[jsonKey] = true;
                     }
                 });
                 variants.push(variant);
@@ -530,19 +538,19 @@
                 const { style, variants } = parseTailwind(classNameString || '');
                 
                 // --- Default Style Logic ---
-                // Start with universal defaults
                 const finalStyle = {
                     'border-style': 'solid',
                     'border-width': '0',
-                    ...style // Let parsed styles override universal defaults
+                    ...style
                 };
 
-                // Apply layout defaults ONLY if not specified by a class
+                // Case 1: No display class is present. Default to flex-column.
                 if (!style.display) {
                     finalStyle.display = 'flex';
                     finalStyle['flex-direction'] = 'column';
-                } else if (style.display.includes('flex') && !style['flex-direction']) {
-                    // If 'flex' is used without a direction, default to 'row' (browser standard)
+                } 
+                // Case 2: A flex class is present, but no direction is specified. Default to row (standard CSS behavior).
+                else if (style.display.includes('flex') && !style['flex-direction']) {
                     finalStyle['flex-direction'] = 'row';
                 }
                 
@@ -552,7 +560,7 @@
                     classes: {},
                     attrs: {},
                     events: {},
-                    style: finalStyle, // Use the final, computed style object
+                    style: finalStyle,
                     styleVariables: {},
                     variants: variants,
                     children: []
@@ -602,7 +610,6 @@
                 
                 let rootElement;
                 
-                // Handle case where user pastes a single element vs a fragment
                 if (doc.body.children.length === 1 && !['STYLE', 'SCRIPT'].includes(doc.body.firstElementChild.tagName)) {
                     rootElement = doc.body.firstElementChild;
                 } else {
