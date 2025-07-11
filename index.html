@@ -281,7 +281,6 @@
             ...genSpacing('m', 'margin'), ...genXYSpacing('mx', 'margin-left', 'margin-right'), ...genXYSpacing('my', 'margin-top', 'margin-bottom'), ...genSpacing('mt', 'margin-top'), ...genSpacing('mr', 'margin-right'), ...genSpacing('mb', 'margin-bottom'), ...genSpacing('ml', 'margin-left'),
             ...genNegativeMargin('m', 'margin'), ...genNegativeMargin('mx', 'margin-left', 'margin-right'), ...genNegativeMargin('my', 'margin-top', 'margin-bottom'), ...genNegativeMargin('mt', 'margin-top'), ...genNegativeMargin('mr', 'margin-right'), ...genNegativeMargin('mb', 'margin-bottom'), ...genNegativeMargin('ml', 'margin-left'),
             'mx-auto': { 'margin-left': 'auto', 'margin-right': 'auto' },
-            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`gap-${k}`, { 'column-gap': v, 'row-gap': v }])), ...genSpacing('gap-x', 'column-gap'), ...genSpacing('gap-y', 'row-gap'),
             
             // --- Sizing ---
             ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`w-${k}`, { width: v }])), 'w-auto': { 'width': 'auto' }, 'w-1/2': { 'width': '50%' }, 'w-1/3': { 'width': '33.333333%' }, 'w-2/3': { 'width': '66.666667%' }, 'w-1/4': { 'width': '25%' }, 'w-2/4': { 'width': '50%' }, 'w-3/4': { 'width': '75%' }, 'w-1/5': { 'width': '20%' }, 'w-2/5': { 'width': '40%' }, 'w-3/5': { 'width': '60%' }, 'w-4/5': { 'width': '80%' }, 'w-1/6': { 'width': '16.666667%' }, 'w-5/6': { 'width': '83.333333%' }, 'w-full': { 'width': '100%' }, 'w-screen': { 'width': '100vw' }, 'w-min': { 'width': 'min-content' }, 'w-max': { 'width': 'max-content' }, 'w-fit': { 'width': 'fit-content' },
@@ -363,11 +362,13 @@
             'will-change-auto': { 'will-change': 'auto' }, 'will-change-scroll': { 'will-change': 'scroll-position' }, 'will-change-contents': { 'will-change': 'contents' }, 'will-change-transform': { 'will-change': 'transform' },
         };
         
-        const sampleHtml = `<div class="flex h-screen">
-    <div class="w-64 bg-gray-800 p-4">Sidebar</div>
-    <div class="flex-1 p-10 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');">
-        <h1 class="text-3xl font-bold text-white">Main Content</h1>
-        <p class="text-white">This area uses flex-1 (which becomes flex: 1 1 0%) to grow and fill the remaining space.</p>
+        const sampleHtml = `<div class="min-h-screen bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');">
+    <div class="flex p-4">
+        <div class="w-64 bg-gray-800 p-4 rounded-lg shadow-lg">Sidebar</div>
+        <div class="grow p-4 ml-4 bg-gray-800/50 rounded-lg shadow-lg">
+            <h1 class="text-white font-bold text-xl">Main Content</h1>
+            <p class="text-white/80">This element uses 'grow' which maps to 'flex-grow: 1'.</p>
+        </div>
     </div>
 </div>`;
         
@@ -729,7 +730,7 @@
                         styleToApply['border-left-width'] = width;
                     } else if (className.startsWith('divide-')) {
                         const colorClass = className.replace('divide-', 'border-');
-                        if (tailwindMap[colorClass]) {
+                        if (tailwindMap[colorClass] && tailwindMap[colorClass]['--tw-divide-color']) {
                            styleToApply['border-color'] = tailwindMap[colorClass]['--tw-divide-color'];
                         }
                     }
