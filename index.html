@@ -438,7 +438,7 @@
         const sampleHtml = `<div class="bg-gray-800 p-8">
   <div class="container px-4">
     <div class="bg-indigo-500 text-white p-4 rounded-lg">
-      This is a centered container with padding.
+      This is a centered container with padding. Its max-width will now use 'rem' units.
     </div>
   </div>
 </div>`;
@@ -575,7 +575,7 @@
 
             const classes = classString.split(/\s+/).filter(c => c);
             
-            const responsivePrefixes = { 'sm': '640px', 'md': '768px', 'lg': '1024px', 'xl': '1280px', '2xl': '1536px' };
+            const responsivePrefixes = { 'sm': '40rem', 'md': '48rem', 'lg': '64rem', 'xl': '80rem', '2xl': '96rem' };
             const arbitraryValueRegex = /(.+?)-\[(.+)\]/;
 
             for (let className of classes) {
@@ -599,10 +599,15 @@
                     });
                     // Add responsive max-width variants
                     for (const bp in responsivePrefixes) {
-                        variants.push({
-                            mediaQuery: { 'min-width': responsivePrefixes[bp] },
-                            style: { 'max-width': responsivePrefixes[bp] }
-                        });
+                        const existingVariant = variants.find(v => v.mediaQuery?.['min-width'] === responsivePrefixes[bp]);
+                        if (existingVariant) {
+                           existingVariant.style['max-width'] = responsivePrefixes[bp];
+                        } else {
+                            variants.push({
+                                mediaQuery: { 'min-width': responsivePrefixes[bp] },
+                                style: { 'max-width': responsivePrefixes[bp] }
+                            });
+                        }
                     }
                     continue; // Done with this class, move to the next one
                 }
@@ -880,7 +885,7 @@
                     Object.assign(childNode.style, styleToApply);
                 } else {
                     const variantConditions = {};
-                    const responsivePrefixes = { 'sm': '640px', 'md': '768px', 'lg': '1024px', 'xl': '1280px', '2xl': '1536px' };
+                    const responsivePrefixes = { 'sm': '40rem', 'md': '48rem', 'lg': '64rem', 'xl': '80rem', '2xl': '96rem' };
                     variants.forEach(prefix => {
                          if (responsivePrefixes[prefix]) {
                             variantConditions.mediaQuery = { 'min-width': responsivePrefixes[prefix] };
