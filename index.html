@@ -282,6 +282,7 @@
             ...genSpacing('m', 'margin'), ...genXYSpacing('mx', 'margin-left', 'margin-right'), ...genXYSpacing('my', 'margin-top', 'margin-bottom'), ...genSpacing('mt', 'margin-top'), ...genSpacing('mr', 'margin-right'), ...genSpacing('mb', 'margin-bottom'), ...genSpacing('ml', 'margin-left'),
             ...genNegativeMargin('m', 'margin'), ...genNegativeMargin('mx', 'margin-left', 'margin-right'), ...genNegativeMargin('my', 'margin-top', 'margin-bottom'), ...genNegativeMargin('mt', 'margin-top'), ...genNegativeMargin('mr', 'margin-right'), ...genNegativeMargin('mb', 'margin-bottom'), ...genNegativeMargin('ml', 'margin-left'),
             'mx-auto': { 'margin-left': 'auto', 'margin-right': 'auto' },
+            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`gap-${k}`, { 'column-gap': v, 'row-gap': v }])), ...genSpacing('gap-x', 'column-gap'), ...genSpacing('gap-y', 'row-gap'),
             
             // --- Sizing ---
             ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`w-${k}`, { width: v }])), 'w-auto': { 'width': 'auto' }, 'w-1/2': { 'width': '50%' }, 'w-1/3': { 'width': '33.333333%' }, 'w-2/3': { 'width': '66.666667%' }, 'w-1/4': { 'width': '25%' }, 'w-2/4': { 'width': '50%' }, 'w-3/4': { 'width': '75%' }, 'w-1/5': { 'width': '20%' }, 'w-2/5': { 'width': '40%' }, 'w-3/5': { 'width': '60%' }, 'w-4/5': { 'width': '80%' }, 'w-1/6': { 'width': '16.666667%' }, 'w-5/6': { 'width': '83.333333%' }, 'w-full': { 'width': '100%' }, 'w-screen': { 'width': '100vw' }, 'w-min': { 'width': 'min-content' }, 'w-max': { 'width': 'max-content' }, 'w-fit': { 'width': 'fit-content' },
@@ -363,19 +364,11 @@
             'will-change-auto': { 'will-change': 'auto' }, 'will-change-scroll': { 'will-change': 'scroll-position' }, 'will-change-contents': { 'will-change': 'contents' }, 'will-change-transform': { 'will-change': 'transform' },
         };
         
-        const sampleHtml = `
-<div class="bg-slate-900 p-8">
-  <div class="flex items-center gap-4">
-    <div class="flex-shrink-0 bg-sky-500 rounded-full p-3">
-        <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-    </div>
-    <div class="flex-grow">
-        <p class="font-medium text-slate-200">Basic Thingamajig</p>
-        <p class="text-sm text-slate-400">2,500 units sold</p>
-    </div>
-    <div class="flex-shrink-0">
-        <p class="text-xl font-bold text-slate-200">$50.00</p>
-    </div>
+        const sampleHtml = `<div class="p-4 bg-gray-900 group">
+  <div class="p-4 bg-slate-800 rounded-lg">
+    <p class="text-white group-hover:text-yellow-300 transition-colors">
+      Hover the gray box to turn this yellow.
+    </p>
   </div>
 </div>`;
         
