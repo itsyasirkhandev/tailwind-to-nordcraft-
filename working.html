@@ -31,6 +31,9 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #6b7280; /* gray-500 */
         }
+        .text-shadow-lg {
+             text-shadow: 0 10px 15px rgba(0,0,0,0.3);
+        }
     </style>
 </head>
 <body class="text-gray-200">
@@ -121,6 +124,7 @@
             'accent': 'accent-color', 'caret': 'caret-color', 'fill': 'fill', 'stroke': 'stroke',
             'decoration': 'text-decoration-color',
             'from': '--tw-gradient-from-color', 'via': '--tw-gradient-via-color', 'to': '--tw-gradient-to-color',
+            'divide': '--tw-divide-color',
             'shadow': '--tw-shadow-color',
             'outline': 'outline-color',
         };
@@ -238,7 +242,7 @@
             'border-b': { 'border-bottom-width': '1px' }, ...Object.fromEntries([0, 2, 4, 8].map(i => [`border-b-${i}`, { 'border-bottom-width': `${i}px` }])),
             'border-l': { 'border-left-width': '1px' }, ...Object.fromEntries([0, 2, 4, 8].map(i => [`border-l-${i}`, { 'border-left-width': `${i}px` }])),
             'border-solid': { 'border-style': 'solid' }, 'border-dashed': { 'border-style': 'dashed' }, 'border-dotted': { 'border-style': 'dotted' }, 'border-double': { 'border-style': 'double' }, 'border-hidden': { 'border-style': 'hidden' }, 'border-none': { 'border-style': 'none' },
-            ...Object.fromEntries([0, 5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 100].map(o => [`border-opacity-${o}`, { '--tw-border-opacity': o / 100 }])),
+            ...Object.fromEntries([0, 5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 100].map(o => [`border-opacity-${o}`, { '_border_opacity': o / 100 }])),
             'outline-0': { 'outline-width': '0px' }, 'outline-1': { 'outline-width': '1px' }, 'outline-2': { 'outline-width': '2px' }, 'outline-4': { 'outline-width': '4px' }, 'outline-8': { 'outline-width': '8px' },
             'outline': { 'outline-style': 'solid' }, 'outline-dashed': { 'outline-style': 'dashed' }, 'outline-dotted': { 'outline-style': 'dotted' }, 'outline-double': { 'outline-style': 'double' },
             'outline-none': { 'outline': '2px solid transparent', 'outline-offset': '2px' },
@@ -253,7 +257,8 @@
             'flex-row': { 'flex-direction': 'row' }, 'flex-row-reverse': { 'flex-direction': 'row-reverse' }, 'flex-col': { 'flex-direction': 'column' }, 'flex-col-reverse': { 'flex-direction': 'column-reverse' },
             'flex-wrap': { 'flex-wrap': 'wrap' }, 'flex-wrap-reverse': { 'flex-wrap': 'wrap-reverse' }, 'flex-nowrap': { 'flex-wrap': 'nowrap' },
             'flex-1': { 'flex': '1 1 0%' }, 'flex-auto': { 'flex': '1 1 auto' }, 'flex-initial': { 'flex': '0 1 auto' }, 'flex-none': { 'flex': 'none' },
-            'grow': { 'flex-grow': '1' }, 'grow-0': { 'flex-grow': '0' }, 'shrink': { 'flex-shrink': '1' }, 'shrink-0': { 'flex-shrink': '0' },
+            'grow': { 'flex-grow': '1' }, 'flex-grow': { 'flex-grow': '1' }, 'grow-0': { 'flex-grow': '0' }, 'flex-grow-0': { 'flex-grow': '0' },
+            'shrink': { 'flex-shrink': '1' }, 'flex-shrink': { 'flex-shrink': '1' }, 'shrink-0': { 'flex-shrink': '0' }, 'flex-shrink-0': { 'flex-shrink': '0' },
             ...Object.fromEntries(Array.from({ length: 13 }, (_, i) => [`order-${i}`, { 'order': `${i}` }])), 'order-first': { 'order': '-9999' }, 'order-last': { 'order': '9999' }, 'order-none': { 'order': '0' },
             ...Object.fromEntries(Array.from({ length: 13 }, (_, i) => i > 0 ? [`grid-cols-${i}`, { 'grid-template-columns': `repeat(${i}, minmax(0, 1fr))` }] : [])), 'grid-cols-none': { 'grid-template-columns': 'none' },
             ...Object.fromEntries(Array.from({ length: 13 }, (_, i) => i > 0 ? [`col-span-${i}`, { 'grid-column': `span ${i} / span ${i}` }] : [])), 'col-span-full': { 'grid-column': '1 / -1' }, ...Object.fromEntries(Array.from({ length: 14 }, (_, i) => i > 0 ? [`col-start-${i}`, { 'grid-column-start': i }] : [])), 'col-start-auto': { 'grid-column-start': 'auto' }, ...Object.fromEntries(Array.from({ length: 14 }, (_, i) => i > 0 ? [`col-end-${i}`, { 'grid-column-end': i }] : [])), 'col-end-auto': { 'grid-column-end': 'auto' },
@@ -278,8 +283,7 @@
             ...genNegativeMargin('m', 'margin'), ...genNegativeMargin('mx', 'margin-left', 'margin-right'), ...genNegativeMargin('my', 'margin-top', 'margin-bottom'), ...genNegativeMargin('mt', 'margin-top'), ...genNegativeMargin('mr', 'margin-right'), ...genNegativeMargin('mb', 'margin-bottom'), ...genNegativeMargin('ml', 'margin-left'),
             'mx-auto': { 'margin-left': 'auto', 'margin-right': 'auto' },
             ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`gap-${k}`, { 'column-gap': v, 'row-gap': v }])), ...genSpacing('gap-x', 'column-gap'), ...genSpacing('gap-y', 'row-gap'),
-            ...genSpacing('space-y', 'row-gap'), ...genSpacing('space-x', 'column-gap'),
-
+            
             // --- Sizing ---
             ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`w-${k}`, { width: v }])), 'w-auto': { 'width': 'auto' }, 'w-1/2': { 'width': '50%' }, 'w-1/3': { 'width': '33.333333%' }, 'w-2/3': { 'width': '66.666667%' }, 'w-1/4': { 'width': '25%' }, 'w-2/4': { 'width': '50%' }, 'w-3/4': { 'width': '75%' }, 'w-1/5': { 'width': '20%' }, 'w-2/5': { 'width': '40%' }, 'w-3/5': { 'width': '60%' }, 'w-4/5': { 'width': '80%' }, 'w-1/6': { 'width': '16.666667%' }, 'w-5/6': { 'width': '83.333333%' }, 'w-full': { 'width': '100%' }, 'w-screen': { 'width': '100vw' }, 'w-min': { 'width': 'min-content' }, 'w-max': { 'width': 'max-content' }, 'w-fit': { 'width': 'fit-content' },
             'min-w-0': { 'min-width': '0px' }, 'min-w-full': { 'min-width': '100%' }, 'min-w-min': { 'min-width': 'min-content' }, 'min-w-max': { 'min-width': 'max-content' }, 'min-w-fit': { 'min-width': 'fit-content' },
@@ -315,7 +319,7 @@
             // --- Backgrounds ---
             'bg-fixed': { 'background-attachment': 'fixed' }, 'bg-local': { 'background-attachment': 'local' }, 'bg-scroll': { 'background-attachment': 'scroll' },
             'bg-clip-border': { 'background-clip': 'border-box' }, 'bg-clip-padding': { 'background-clip': 'padding-box' }, 'bg-clip-content': { 'background-clip': 'content-box' }, 'bg-clip-text': { 'background-clip': 'text' },
-            ...Object.fromEntries([0, 5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 95, 100].map(o => [`bg-opacity-${o}`, { '--tw-bg-opacity': o / 100 }])),
+            ...Object.fromEntries([0, 5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 95, 100].map(o => [`bg-opacity-${o}`, { '_bg_opacity': o / 100 }])),
             'bg-origin-border': { 'background-origin': 'border-box' }, 'bg-origin-padding': { 'background-origin': 'padding-box' }, 'bg-origin-content': { 'background-origin': 'content-box' },
             'bg-bottom': { 'background-position': 'bottom' }, 'bg-center': { 'background-position': 'center' }, 'bg-left': { 'background-position': 'left' }, 'bg-left-bottom': { 'background-position': 'left bottom' }, 'bg-left-top': { 'background-position': 'left top' }, 'bg-right': { 'background-position': 'right' }, 'bg-right-bottom': { 'background-position': 'right bottom' }, 'bg-right-top': { 'background-position': 'right top' }, 'bg-top': { 'background-position': 'top' },
             'bg-repeat': { 'background-repeat': 'repeat' }, 'bg-no-repeat': { 'background-repeat': 'no-repeat' }, 'bg-repeat-x': { 'background-repeat': 'repeat-x' }, 'bg-repeat-y': { 'background-repeat': 'repeat-y' }, 'bg-repeat-round': { 'background-repeat': 'round' }, 'bg-repeat-space': { 'background-repeat': 'space' },
@@ -359,6 +363,14 @@
             'select-none': { 'user-select': 'none' }, 'select-text': { 'user-select': 'text' }, 'select-all': { 'user-select': 'all' }, 'select-auto': { 'user-select': 'auto' },
             'will-change-auto': { 'will-change': 'auto' }, 'will-change-scroll': { 'will-change': 'scroll-position' }, 'will-change-contents': { 'will-change': 'contents' }, 'will-change-transform': { 'will-change': 'transform' },
         };
+        
+        const sampleHtml = `<div class="p-4 bg-gray-900 group">
+  <div class="p-4 bg-slate-800 rounded-lg">
+    <p class="text-white group-hover:text-yellow-300 transition-colors">
+      Hover the gray box to turn this yellow.
+    </p>
+  </div>
+</div>`;
         
         const htmlInput = document.getElementById('html-input');
         const jsonOutput = document.getElementById('json-output');
@@ -407,7 +419,8 @@
             'required': 'required',
             'valid': 'valid',
             'placeholder': 'placeholder',
-            'group-hover': 'group-hover',
+            'group-hover': 'hover', // Map group-hover to hover
+            'group-focus': 'focus', // Map group-focus to focus
             'dark': 'dark'
         };
 
@@ -446,6 +459,19 @@
             delete styleObject['--tw-gradient-via-color'];
             delete styleObject['--tw-gradient-to-color'];
 
+            // --- Compose Background Color with Opacity ---
+            if (styleObject.hasOwnProperty('background-color') && styleObject.hasOwnProperty('_bg_opacity')) {
+                const color = styleObject['background-color'];
+                const opacity = styleObject['_bg_opacity'];
+                
+                // Only apply if the color is a valid hex code
+                if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(color)) {
+                     styleObject['background-color'] = hexToRgba(color, opacity);
+                }
+                
+                delete styleObject['_bg_opacity'];
+            }
+
             // --- Clean Gaps ---
             const hasGap = 'column-gap' in styleObject || 'row-gap' in styleObject;
             if (hasGap) {
@@ -459,11 +485,14 @@
             }
         };
 
+        // Regular expression to catch special child-styling utilities.
+        const directiveRegex = /^(divide-[xy](-[\d.px]+|-reverse)?|divide-(solid|dashed|dotted|double|none)|divide-\w+-\d+)$/;
 
         function parseTailwind(classString) {
             const style = {};
             let variants = [];
             const groupedVariants = {};
+            const directives = [];
 
             const classes = classString.split(/\s+/).filter(c => c);
             
@@ -479,8 +508,14 @@
 
                 const parts = className.split(':');
                 let baseClass = parts.pop();
-                const prefixes = parts.sort();
-                const variantKey = prefixes.join(':');
+                const variantPrefixes = parts.sort();
+                const variantKey = variantPrefixes.join(':');
+
+                // Check if the class is a special directive for child styling
+                if (directiveRegex.test(baseClass)) {
+                    directives.push({ className: baseClass, variants: variantPrefixes });
+                    continue;
+                }
 
                 let css = {};
                 
@@ -502,13 +537,21 @@
                          const prop = match[1];
                          let value = match[2].replace(/_/g, ' ');
 
-                         const gradientPropMap = {'from': '--tw-gradient-from-color', 'via': '--tw-gradient-via-color', 'to': '--tw-gradient-to-color'};
-                         if (gradientPropMap[prop]) {
-                            css[gradientPropMap[prop]] = value;
+                         if (prop === 'bg') {
+                            if (value.startsWith('url(') || value.includes('gradient')) {
+                                css['background-image'] = value;
+                            } else {
+                                css['background-color'] = value;
+                            }
                          } else {
-                            const cssPropMap = { 'bg': 'background-color', 'w': 'width', 'h': 'height', 'p': 'padding', 'm': 'margin', 'text': 'color', 'border': 'border-color' };
-                            const cssProp = cssPropMap[prop] || prop;
-                            css[cssProp] = value;
+                            const gradientPropMap = {'from': '--tw-gradient-from-color', 'via': '--tw-gradient-via-color', 'to': '--tw-gradient-to-color'};
+                            if (gradientPropMap[prop]) {
+                                css[gradientPropMap[prop]] = value;
+                            } else {
+                                const cssPropMap = { 'w': 'width', 'h': 'height', 'p': 'padding', 'm': 'margin', 'text': 'color', 'border': 'border-color' };
+                                const cssProp = cssPropMap[prop] || prop;
+                                css[cssProp] = value;
+                            }
                          }
                      } else if (tailwindMap[baseClass]) {
                          css = { ...tailwindMap[baseClass] };
@@ -551,7 +594,7 @@
                 postProcessStyle(variant.style, style);
             });
             
-            return { style, variants };
+            return { style, variants, directives };
         }
         
         /**
@@ -605,7 +648,7 @@
                     : domNode.className;
 
                 const expandedClassString = expandClasses(classNameString, componentClassMap);
-                const { style, variants } = parseTailwind(expandedClassString);
+                const { style, variants, directives } = parseTailwind(expandedClassString);
                 
                 const tableDisplayMap = {
                     'table': 'table', 'thead': 'table-header-group', 'tbody': 'table-row-group',
@@ -637,6 +680,7 @@
                     attrs: {},
                     events: {},
                     style: finalStyle,
+                    directives: directives,
                     variants: variants,
                     children: []
                 };
@@ -650,8 +694,12 @@
                 if (domNode.style && domNode.style.cssText) {
                     const inlineStyles = domNode.style.cssText.split(';').filter(s => s.trim());
                     inlineStyles.forEach(s => {
-                        const [key, value] = s.split(':').map(p => p.trim());
-                        if (key && value) nodeData.style[key] = value;
+                        const delimiterIndex = s.indexOf(':');
+                        if (delimiterIndex > -1) {
+                            const key = s.substring(0, delimiterIndex).trim();
+                            const value = s.substring(delimiterIndex + 1).trim();
+                            if (key && value) nodeData.style[key] = value;
+                        }
                     });
                 }
                 
@@ -670,6 +718,74 @@
             }
             return null;
         }
+
+        // --- SECOND PASS: APPLY DIRECTIVES ---
+        function applyDirectives(nodes) {
+             for (const nodeId in nodes) {
+                const parentNode = nodes[nodeId];
+                if (!parentNode.directives || parentNode.directives.length === 0 || !parentNode.children || parentNode.children.length === 0) {
+                    continue;
+                }
+
+                const elementChildren = parentNode.children.filter(id => nodes[id] && nodes[id].type === 'element');
+                if (elementChildren.length < 2) continue;
+
+                for(const directive of parentNode.directives) {
+                    const { className, variants: directiveVariants } = directive;
+
+                    let styleToApply = {};
+
+                    if (className.startsWith('divide-y')) {
+                        const width = className === 'divide-y' ? '1px' : (spacingScale[className.replace('divide-y-','')] || '1px');
+                        styleToApply['border-top-width'] = width;
+                    } else if (className.startsWith('divide-x')) {
+                         const width = className === 'divide-x' ? '1px' : (spacingScale[className.replace('divide-x-','')] || '1px');
+                        styleToApply['border-left-width'] = width;
+                    } else if (className.startsWith('divide-')) {
+                        const colorClass = className; // e.g. divide-blue-300
+                        const colorUtility = tailwindMap[colorClass];
+                        if (colorUtility && colorUtility['--tw-divide-color']) {
+                           styleToApply['border-color'] = colorUtility['--tw-divide-color'];
+                        }
+                    }
+
+                    if (Object.keys(styleToApply).length === 0) continue;
+                    
+                    const childrenToModify = className.includes('-reverse') ? elementChildren.slice(0, -1) : elementChildren.slice(1);
+                    
+                    for (const childId of childrenToModify) {
+                        const childNode = nodes[childId];
+                        if (!childNode) continue;
+                        
+                        if(directiveVariants.length === 0) {
+                            Object.assign(childNode.style, styleToApply);
+                        } else {
+                            const variantConditions = {};
+                            directiveVariants.forEach(prefix => {
+                                const responsivePrefixes = { 'sm': '40rem', 'md': '48rem', 'lg': '64rem', 'xl': '80rem', '2xl': '96rem' };
+                                 if (responsivePrefixes[prefix]) {
+                                    variantConditions.mediaQuery = { 'min-width': responsivePrefixes[prefix] };
+                                } else if (pseudoClassMap[prefix]) {
+                                    variantConditions[pseudoClassMap[prefix]] = true;
+                                }
+                            });
+
+                            let targetVariant = childNode.variants.find(v => 
+                                JSON.stringify(Object.keys(v).sort()) === JSON.stringify(Object.keys(variantConditions).concat('style').sort()) &&
+                                Object.keys(variantConditions).every(k => JSON.stringify(v[k]) === JSON.stringify(variantConditions[k]))
+                            );
+
+                            if(targetVariant) {
+                                Object.assign(targetVariant.style, styleToApply);
+                            } else {
+                                childNode.variants.push({ ...variantConditions, style: styleToApply });
+                            }
+                        }
+                    }
+                }
+             }
+        }
+
 
         function convert() {
             const html = htmlInput.value;
@@ -699,12 +815,19 @@
                      rootElement = tempWrapper;
                 }
 
+                // Pass 1: Build the tree and collect directives
                 const nodes = {};
                 const rootId = processNode(rootElement, nodes, componentClassMap);
                 
+                // Pass 2: Apply directives to children
+                applyDirectives(nodes);
+
                 if (rootId) {
                     const rootNodeData = nodes[rootId];
                     delete nodes[rootId];
+                    // Clean up the directives property from the final output as it has been processed
+                    Object.values(nodes).forEach(node => delete node.directives);
+                    delete rootNodeData.directives;
                     nodes['root'] = rootNodeData;
                 }
 

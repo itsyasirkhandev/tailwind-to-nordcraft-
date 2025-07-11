@@ -364,12 +364,49 @@
             'will-change-auto': { 'will-change': 'auto' }, 'will-change-scroll': { 'will-change': 'scroll-position' }, 'will-change-contents': { 'will-change': 'contents' }, 'will-change-transform': { 'will-change': 'transform' },
         };
         
-        const sampleHtml = `<div class="p-4 bg-gray-900 group">
-  <div class="p-4 bg-slate-800 rounded-lg">
-    <p class="text-white group-hover:text-yellow-300 transition-colors">
-      Hover the gray box to turn this yellow.
-    </p>
+        const sampleHtml = `<div class="p-6 bg-gray-900">
+  <p class="text-white text-lg mb-4">Space Between Utilities</p>
+  
+  <!-- Horizontal Spacing -->
+  <div class="mb-8 p-4 border border-dashed border-gray-600 rounded-lg">
+    <p class="text-sm text-gray-400 mb-2 font-mono">class="flex space-x-4"</p>
+    <div class="flex space-x-4">
+      <div class="bg-blue-500 rounded-md p-3 text-white">01</div>
+      <div class="bg-blue-500 rounded-md p-3 text-white">02</div>
+      <div class="bg-blue-500 rounded-md p-3 text-white">03</div>
+    </div>
   </div>
+
+  <!-- Horizontal Spacing Reversed -->
+  <div class="mb-8 p-4 border border-dashed border-gray-600 rounded-lg">
+    <p class="text-sm text-gray-400 mb-2 font-mono">class="flex flex-row-reverse space-x-4 space-x-reverse"</p>
+    <div class="flex flex-row-reverse space-x-4 space-x-reverse">
+      <div class="bg-indigo-500 rounded-md p-3 text-white">01</div>
+      <div class="bg-indigo-500 rounded-md p-3 text-white">02</div>
+      <div class="bg-indigo-500 rounded-md p-3 text-white">03</div>
+    </div>
+  </div>
+
+  <!-- Vertical Spacing -->
+  <div class="mb-8 p-4 border border-dashed border-gray-600 rounded-lg">
+    <p class="text-sm text-gray-400 mb-2 font-mono">class="flex flex-col space-y-4"</p>
+    <div class="flex flex-col space-y-4">
+      <div class="bg-purple-500 rounded-md p-3 text-white">01</div>
+      <div class="bg-purple-500 rounded-md p-3 text-white">02</div>
+      <div class="bg-purple-500 rounded-md p-3 text-white">03</div>
+    </div>
+  </div>
+
+  <!-- Negative Horizontal Spacing -->
+  <div class="p-4 border border-dashed border-gray-600 rounded-lg">
+    <p class="text-sm text-gray-400 mb-2 font-mono">class="flex -space-x-4"</p>
+    <div class="flex -space-x-4">
+      <div class="w-16 h-16 rounded-full bg-red-500 border-4 border-gray-800"></div>
+      <div class="w-16 h-16 rounded-full bg-red-500 border-4 border-gray-800"></div>
+      <div class="w-16 h-16 rounded-full bg-red-500 border-4 border-gray-800"></div>
+    </div>
+  </div>
+
 </div>`;
         
         const htmlInput = document.getElementById('html-input');
@@ -486,7 +523,7 @@
         };
 
         // Regular expression to catch special child-styling utilities.
-        const directiveRegex = /^(divide-[xy](-[\d.px]+|-reverse)?|divide-(solid|dashed|dotted|double|none)|divide-\w+-\d+)$/;
+        const directiveRegex = /^(divide-.+|-?space-x-.+|-?space-y-.+)/;
 
         function parseTailwind(classString) {
             const style = {};
@@ -719,68 +756,168 @@
             return null;
         }
 
+        /**
+         * Parses a space-* class to get the CSS value.
+         * @param {string} className - The full Tailwind class name (e.g., '-space-x-4').
+         * @param {object} spacingScale - The map of spacing keys to values.
+         * @returns {string|null} - The CSS value string (e.g., 'calc(1rem * -1)') or null.
+         */
+        function parseSpaceValue(className, spacingScale) {
+            const isNegative = className.startsWith('-');
+            const coreClass = isNegative ? className.substring(1) : className;
+            // 'space-x-'.length is the same as 'space-y-'.length
+            const valuePart = coreClass.substring('space-x-'.length);
+
+            let value;
+            if (valuePart.startsWith('[')) {
+                value = valuePart.slice(1, -1).replace(/_/g, ' ');
+            } else if (valuePart.startsWith('(')) {
+                value = `var(${valuePart.slice(1, -1)})`;
+            } else if (spacingScale[valuePart]) {
+                value = spacingScale[valuePart];
+            } else {
+                return null;
+            }
+
+            if (isNegative) {
+                return `calc(${value} * -1)`;
+            }
+
+            return value;
+        }
+
+        /**
+         * Helper function to apply styles to a list of child nodes, handling variants.
+         * @param {string[]} childIds - Array of node IDs to apply styles to.
+         * @param {object} styleToApply - The CSS style object.
+         * @param {string[]} variants - Array of variant prefixes (e.g., ['hover', 'md']).
+         * @param {object} allNodes - The map of all nodes in the tree.
+         */
+        function applyStylesToChildren(childIds, styleToApply, variants, allNodes) {
+             for (const childId of childIds) {
+                const childNode = allNodes[childId];
+                if (!childNode) continue;
+                
+                if (variants.length === 0) {
+                    Object.assign(childNode.style, styleToApply);
+                } else {
+                    const variantConditions = {};
+                    variants.forEach(prefix => {
+                        const responsivePrefixes = { 'sm': '40rem', 'md': '48rem', 'lg': '64rem', 'xl': '80rem', '2xl': '96rem' };
+                         if (responsivePrefixes[prefix]) {
+                            variantConditions.mediaQuery = { 'min-width': responsivePrefixes[prefix] };
+                        } else if (pseudoClassMap[prefix]) {
+                            variantConditions[pseudoClassMap[prefix]] = true;
+                        }
+                    });
+
+                    // Find an existing variant object to merge with
+                    let targetVariant = childNode.variants.find(v => {
+                        const vKeys = Object.keys(v).filter(k => k !== 'style');
+                        const cKeys = Object.keys(variantConditions);
+                        if (vKeys.length !== cKeys.length) return false;
+                        return cKeys.every(key => JSON.stringify(v[key]) === JSON.stringify(variantConditions[key]));
+                    });
+
+                    if (targetVariant) {
+                        Object.assign(targetVariant.style, styleToApply);
+                    } else {
+                        childNode.variants.push({ ...variantConditions, style: styleToApply });
+                    }
+                }
+            }
+        }
+
+
         // --- SECOND PASS: APPLY DIRECTIVES ---
         function applyDirectives(nodes) {
              for (const nodeId in nodes) {
                 const parentNode = nodes[nodeId];
-                if (!parentNode.directives || parentNode.directives.length === 0 || !parentNode.children || parentNode.children.length === 0) {
+                if (!parentNode.directives?.length || !parentNode.children?.length) {
                     continue;
                 }
 
-                const elementChildren = parentNode.children.filter(id => nodes[id] && nodes[id].type === 'element');
-                if (elementChildren.length < 2) continue;
+                const elementChildren = parentNode.children.filter(id => nodes[id]?.type === 'element');
+                if (elementChildren.length === 0) continue;
 
-                for(const directive of parentNode.directives) {
-                    const { className, variants: directiveVariants } = directive;
+                // Group directives by the variant they apply to (e.g., 'base', 'hover', 'md:hover')
+                const directivesByVariant = parentNode.directives.reduce((acc, directive) => {
+                    const variantKey = directive.variants.join(':') || 'base';
+                    if (!acc[variantKey]) {
+                        acc[variantKey] = { classNames: [], variants: directive.variants };
+                    }
+                    acc[variantKey].classNames.push(directive.className);
+                    return acc;
+                }, {});
 
-                    let styleToApply = {};
 
-                    if (className.startsWith('divide-y')) {
-                        const width = className === 'divide-y' ? '1px' : (spacingScale[className.replace('divide-y-','')] || '1px');
-                        styleToApply['border-top-width'] = width;
-                    } else if (className.startsWith('divide-x')) {
-                         const width = className === 'divide-x' ? '1px' : (spacingScale[className.replace('divide-x-','')] || '1px');
-                        styleToApply['border-left-width'] = width;
-                    } else if (className.startsWith('divide-')) {
-                        const colorClass = className; // e.g. divide-blue-300
-                        const colorUtility = tailwindMap[colorClass];
-                        if (colorUtility && colorUtility['--tw-divide-color']) {
-                           styleToApply['border-color'] = colorUtility['--tw-divide-color'];
-                        }
+                // For each variant group, process all its directives together
+                for (const variantKey in directivesByVariant) {
+                    const { classNames, variants: directiveVariants } = directivesByVariant[variantKey];
+                    
+                    // --- Handle Divide ---
+                    const divideXValueClass = classNames.find(c => /^divide-x($|-[\d.]+$)/.test(c));
+                    const divideYValueClass = classNames.find(c => /^divide-y($|-[\d.]+$)/.test(c));
+                    const divideColorClass = classNames.find(c => tailwindMap[c]?.['--tw-divide-color']);
+                    const divideStyleClass = classNames.find(c => /^divide-(solid|dashed|dotted|double|none)$/.test(c));
+                    const hasDivideXReverse = classNames.some(c => c === 'divide-x-reverse');
+                    const hasDivideYReverse = classNames.some(c => c === 'divide-y-reverse');
+
+                    let divideStyle = {};
+                    if(divideColorClass) divideStyle['border-color'] = tailwindMap[divideColorClass]['--tw-divide-color'];
+                    if(divideStyleClass) divideStyle['border-style'] = divideStyleClass.substring('divide-'.length);
+                    
+                    if (divideXValueClass) {
+                        const width = divideXValueClass === 'divide-x' ? '1px' : (spacingScale[divideXValueClass.replace('divide-x-','')] || '1px');
+                        divideStyle['--tw-divide-x-reverse'] = hasDivideXReverse ? '1' : '0';
+                        divideStyle['border-right-width'] = `calc(${width} * var(--tw-divide-x-reverse))`;
+                        divideStyle['border-left-width'] = `calc(${width} * calc(1 - var(--tw-divide-x-reverse)))`;
+                    }
+                     if (divideYValueClass) {
+                        const width = divideYValueClass === 'divide-y' ? '1px' : (spacingScale[divideYValueClass.replace('divide-y-','')] || '1px');
+                        divideStyle['--tw-divide-y-reverse'] = hasDivideYReverse ? '1' : '0';
+                        divideStyle['border-bottom-width'] = `calc(${width} * var(--tw-divide-y-reverse))`;
+                        divideStyle['border-top-width'] = `calc(${width} * calc(1 - var(--tw-divide-y-reverse)))`;
                     }
 
-                    if (Object.keys(styleToApply).length === 0) continue;
-                    
-                    const childrenToModify = className.includes('-reverse') ? elementChildren.slice(0, -1) : elementChildren.slice(1);
-                    
-                    for (const childId of childrenToModify) {
-                        const childNode = nodes[childId];
-                        if (!childNode) continue;
-                        
-                        if(directiveVariants.length === 0) {
-                            Object.assign(childNode.style, styleToApply);
-                        } else {
-                            const variantConditions = {};
-                            directiveVariants.forEach(prefix => {
-                                const responsivePrefixes = { 'sm': '40rem', 'md': '48rem', 'lg': '64rem', 'xl': '80rem', '2xl': '96rem' };
-                                 if (responsivePrefixes[prefix]) {
-                                    variantConditions.mediaQuery = { 'min-width': responsivePrefixes[prefix] };
-                                } else if (pseudoClassMap[prefix]) {
-                                    variantConditions[pseudoClassMap[prefix]] = true;
-                                }
-                            });
+                    if (Object.keys(divideStyle).length > 0 && elementChildren.length > 1) {
+                         applyStylesToChildren(elementChildren.slice(1), divideStyle, directiveVariants, nodes);
+                    }
 
-                            let targetVariant = childNode.variants.find(v => 
-                                JSON.stringify(Object.keys(v).sort()) === JSON.stringify(Object.keys(variantConditions).concat('style').sort()) &&
-                                Object.keys(variantConditions).every(k => JSON.stringify(v[k]) === JSON.stringify(variantConditions[k]))
-                            );
+                    // --- Handle Space ---
+                    let spaceStyle = {};
+                    const spaceXClass = classNames.find(c => /^-?space-x-.+/.test(c) && c !== 'space-x-reverse');
+                    const spaceYClass = classNames.find(c => /^-?space-y-.+/.test(c) && c !== 'space-y-reverse');
+                    const hasSpaceXReverse = classNames.some(c => c === 'space-x-reverse');
+                    const hasSpaceYReverse = classNames.some(c => c === 'space-y-reverse');
 
-                            if(targetVariant) {
-                                Object.assign(targetVariant.style, styleToApply);
-                            } else {
-                                childNode.variants.push({ ...variantConditions, style: styleToApply });
-                            }
+                    if (spaceXClass) {
+                        const value = parseSpaceValue(spaceXClass, spacingScale);
+                        if (value) {
+                            spaceStyle['--tw-space-x-reverse'] = '0'; // Default value
+                            spaceStyle['margin-inline-start'] = `calc(${value} * var(--tw-space-x-reverse))`;
+                            spaceStyle['margin-inline-end'] = `calc(${value} * calc(1 - var(--tw-space-x-reverse)))`;
                         }
+                    }
+                    if (hasSpaceXReverse) {
+                         spaceStyle['--tw-space-x-reverse'] = '1';
+                    }
+
+                    if (spaceYClass) {
+                        const value = parseSpaceValue(spaceYClass, spacingScale);
+                        if (value) {
+                             spaceStyle['--tw-space-y-reverse'] = '0'; // Default value
+                            spaceStyle['margin-block-start'] = `calc(${value} * var(--tw-space-y-reverse))`;
+                            spaceStyle['margin-block-end'] = `calc(${value} * calc(1 - var(--tw-space-y-reverse)))`;
+                        }
+                    }
+                    if (hasSpaceYReverse) {
+                        spaceStyle['--tw-space-y-reverse'] = '1';
+                    }
+                    
+                    if (Object.keys(spaceStyle).length > 0 && elementChildren.length > 1) {
+                        const childrenToModify = elementChildren.slice(0, -1);
+                        applyStylesToChildren(childrenToModify, spaceStyle, directiveVariants, nodes);
                     }
                 }
              }
