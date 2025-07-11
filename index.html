@@ -435,12 +435,11 @@
             'will-change-auto': { 'will-change': 'auto' }, 'will-change-scroll': { 'will-change': 'scroll-position' }, 'will-change-contents': { 'will-change': 'contents' }, 'will-change-transform': { 'will-change': 'transform' },
         };
         
-        const sampleHtml = `<div class="bg-gray-800 p-8">
-  <div class="container px-4">
-    <div class="bg-indigo-500 text-white p-4 rounded-lg">
-      This is a centered container with padding. Its max-width will now use 'rem' units.
-    </div>
-  </div>
+        const sampleHtml = `<div class="p-4 text-white">
+  <p class="mb-2">This span is hidden on small screens and appears as a block on medium screens and up.</p>
+  <span class="hidden md:block font-semibold bg-indigo-500 p-2 rounded">
+    Visible on medium screens
+  </span>
 </div>`;
         
         const htmlInput = document.getElementById('html-input');
@@ -770,26 +769,14 @@
                 const expandedClassString = expandClasses(classNameString, componentClassMap);
                 const { style, variants, directives } = parseTailwind(expandedClassString);
                 
-                const tableDisplayMap = {
-                    'table': 'table', 'thead': 'table-header-group', 'tbody': 'table-row-group',
-                    'tfoot': 'table-footer-group', 'tr': 'table-row', 'th': 'table-cell',
-                    'td': 'table-cell', 'caption': 'table-caption'
-                };
-
                 const finalStyle = {
                     'border-style': 'solid',
                     'border-width': '0',
                     ...style
                 };
-                
-                if (!style.display) {
-                    if (tableDisplayMap[tagName]) {
-                         finalStyle.display = tableDisplayMap[tagName];
-                    } else {
-                        finalStyle.display = 'flex';
-                        finalStyle['flex-direction'] = 'column';
-                    }
-                } else if (style.display.includes('flex') && !style['flex-direction']) {
+
+                // Only add a default flex-direction if flex is explicitly used
+                if (finalStyle.display?.includes('flex') && !finalStyle['flex-direction']) {
                     finalStyle['flex-direction'] = 'row';
                 }
                 

@@ -203,8 +203,82 @@
             }
         }
 
+        // --- Generator for Transitions ---
+        const transitionProperties = {
+            'none': { 'transition-property': 'none' },
+            'all': { 'transition-property': 'all', 'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)', 'transition-duration': '150ms' },
+            '': { 'transition-property': 'color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter', 'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)', 'transition-duration': '150ms' },
+            'colors': { 'transition-property': 'color, background-color, border-color, text-decoration-color, fill, stroke', 'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)', 'transition-duration': '150ms' },
+            'opacity': { 'transition-property': 'opacity', 'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)', 'transition-duration': '150ms' },
+            'shadow': { 'transition-property': 'box-shadow', 'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)', 'transition-duration': '150ms' },
+            'transform': { 'transition-property': 'transform', 'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)', 'transition-duration': '150ms' },
+        };
+        const transitionDurations = { 0: '0s', 75: '75ms', 100: '100ms', 150: '150ms', 200: '200ms', 300: '300ms', 500: '500ms', 700: '700ms', 1000: '1000ms' };
+        const transitionTimingFunctions = { 'linear': 'linear', 'in': 'cubic-bezier(0.4, 0, 1, 1)', 'out': 'cubic-bezier(0, 0, 0.2, 1)', 'in-out': 'cubic-bezier(0.4, 0, 0.2, 1)' };
+        const transitionDelays = { 0: '0s', 75: '75ms', 100: '100ms', 150: '150ms', 200: '200ms', 300: '300ms', 500: '500ms', 700: '700ms', 1000: '1000ms' };
+
+        let transitionUtilities = {};
+        for(const [key, val] of Object.entries(transitionProperties)) {
+            transitionUtilities[`transition${key ? '-' + key : ''}`] = val;
+        }
+        for(const [key, val] of Object.entries(transitionDurations)) {
+            transitionUtilities[`duration-${key}`] = { 'transition-duration': val };
+        }
+        for(const [key, val] of Object.entries(transitionTimingFunctions)) {
+            transitionUtilities[`ease-${key}`] = { 'transition-timing-function': val };
+        }
+        for(const [key, val] of Object.entries(transitionDelays)) {
+            transitionUtilities[`delay-${key}`] = { 'transition-delay': val };
+        }
+
+        // --- Generator for Transforms ---
+        const transformBase = {
+            'transform': { 'transform': 'translateX(var(--tw-translate-x, 0)) translateY(var(--tw-translate-y, 0)) rotate(var(--tw-rotate, 0)) skewX(var(--tw-skew-x, 0)) skewY(var(--tw-skew-y, 0)) scaleX(var(--tw-scale-x, 1)) scaleY(var(--tw-scale-y, 1))' },
+            'transform-gpu': { 'transform': 'translate3d(var(--tw-translate-x, 0), var(--tw-translate-y, 0), 0) rotate(var(--tw-rotate, 0)) skewX(var(--tw-skew-x, 0)) skewY(var(--tw-skew-y, 0)) scaleX(var(--tw-scale-x, 1)) scaleY(var(--tw-scale-y, 1))' },
+            'transform-none': { 'transform': 'none' },
+        };
+        const scaleValues = { 0: '0', 50: '.5', 75: '.75', 90: '.9', 95: '.95', 100: '1', 105: '1.05', 110: '1.1', 125: '1.25', 150: '1.5' };
+        const rotateValues = { 0: '0deg', 1: '1deg', 2: '2deg', 3: '3deg', 6: '6deg', 12: '12deg', 45: '45deg', 90: '90deg', 180: '180deg' };
+        const skewValues = { 0: '0deg', 1: '1deg', 2: '2deg', 3: '3deg', 6: '6deg', 12: '12deg' };
+        const transformOrigins = { 'center': 'center', 'top': 'top', 'top-right': 'top right', 'right': 'right', 'bottom-right': 'bottom right', 'bottom': 'bottom', 'bottom-left': 'bottom left', 'left': 'left', 'top-left': 'top left' };
+        const fractionalTranslates = {'1/2': '50%', '1/3': '33.333333%', '2/3': '66.666667%', '1/4': '25%', '3/4': '75%', 'full': '100%'};
+
+        let transformUtilities = {...transformBase};
+        for(const [key, val] of Object.entries(scaleValues)) {
+            transformUtilities[`scale-${key}`] = { '--tw-scale-x': val, '--tw-scale-y': val };
+            transformUtilities[`scale-x-${key}`] = { '--tw-scale-x': val };
+            transformUtilities[`scale-y-${key}`] = { '--tw-scale-y': val };
+        }
+        for(const [key, val] of Object.entries(rotateValues)) {
+            transformUtilities[`rotate-${key}`] = { '--tw-rotate': val };
+            transformUtilities[`-rotate-${key}`] = { '--tw-rotate': `-${val}` };
+        }
+        const combinedSpacing = {...spacingScale, ...fractionalTranslates};
+        for (const [key, val] of Object.entries(combinedSpacing)) {
+            const keyStr = String(key).replace(/\//g, '-');
+            const negVal = (val !== '0px' && val !== '0') ? `-${val}` : val;
+            transformUtilities[`translate-x-${keyStr}`] = { '--tw-translate-x': val };
+            transformUtilities[`-translate-x-${keyStr}`] = { '--tw-translate-x': negVal };
+            transformUtilities[`translate-y-${keyStr}`] = { '--tw-translate-y': val };
+            transformUtilities[`-translate-y-${keyStr}`] = { '--tw-translate-y': negVal };
+        }
+        for(const [key, val] of Object.entries(skewValues)) {
+            transformUtilities[`skew-x-${key}`] = { '--tw-skew-x': val };
+            transformUtilities[`-skew-x-${key}`] = { '--tw-skew-x': `-${val}` };
+            transformUtilities[`skew-y-${key}`] = { '--tw-skew-y': val };
+            transformUtilities[`-skew-y-${key}`] = { '--tw-skew-y': `-${val}` };
+        }
+        for(const [key, val] of Object.entries(transformOrigins)) {
+            transformUtilities[`origin-${key}`] = { 'transform-origin': val };
+        }
+
+
         const tailwindMap = {
             ...generatedColorUtilities,
+            ...borderRadiusUtilities,
+            ...insetUtilities,
+            ...transitionUtilities,
+            ...transformUtilities,
 
             // --- Accessibility ---
             'sr-only': { position: 'absolute', width: '1px', height: '1px', padding: '0', margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', 'white-space': 'nowrap', 'border-width': '0' },
@@ -212,7 +286,6 @@
             
             // --- Layout ---
             'aspect-auto': { 'aspect-ratio': 'auto' }, 'aspect-square': { 'aspect-ratio': '1 / 1' }, 'aspect-video': { 'aspect-ratio': '16 / 9' },
-            'container': { 'width': '100%' },
             ...Object.fromEntries(Array.from({ length: 12 }, (_, i) => i + 1).map(i => [`columns-${i}`, { 'columns': `${i}` }])),
             'columns-auto': { 'columns': 'auto' }, 'columns-3xs': { 'columns': '16rem' }, 'columns-2xs': { 'columns': '18rem' }, 'columns-xs': { 'columns': '20rem' }, 'columns-sm': { 'columns': '24rem' }, 'columns-md': { 'columns': '28rem' }, 'columns-lg': { 'columns': '32rem' }, 'columns-xl': { 'columns': '36rem' }, 'columns-2xl': { 'columns': '42rem' }, 'columns-3xl': { 'columns': '48rem' }, 'columns-4xl': { 'columns': '56rem' }, 'columns-5xl': { 'columns': '64rem' }, 'columns-6xl': { 'columns': '72rem' }, 'columns-7xl': { 'columns': '80rem' },
             'break-after-auto': { 'break-after': 'auto' }, 'break-after-avoid': { 'break-after': 'avoid' }, 'break-after-all': { 'break-after': 'all' }, 'break-after-avoid-page': { 'break-after': 'avoid-page' }, 'break-after-page': { 'break-after': 'page' }, 'break-after-left': { 'break-after': 'left' }, 'break-after-right': { 'break-after': 'right' }, 'break-after-column': { 'break-after': 'column' },
@@ -230,12 +303,10 @@
             'scrolling-touch': { '-webkit-overflow-scrolling': 'touch' }, 'scrolling-auto': { '-webkit-overflow-scrolling': 'auto' },
             'overscroll-auto': { 'overscroll-behavior': 'auto' }, 'overscroll-y-auto': { 'overscroll-behavior-y': 'auto' }, 'overscroll-x-auto': { 'overscroll-behavior-x': 'auto' }, 'overscroll-contain': { 'overscroll-behavior': 'contain' }, 'overscroll-y-contain': { 'overscroll-behavior-y': 'contain' }, 'overscroll-x-contain': { 'overscroll-behavior-x': 'contain' }, 'overscroll-none': { 'overscroll-behavior': 'none' }, 'overscroll-y-none': { 'overscroll-behavior-y': 'none' }, 'overscroll-x-none': { 'overscroll-behavior-x': 'none' },
             'static': { 'position': 'static' }, 'fixed': { 'position': 'fixed' }, 'absolute': { 'position': 'absolute' }, 'relative': { 'position': 'relative' }, 'sticky': { 'position': 'sticky' },
-            ...insetUtilities,
             'visible': { 'visibility': 'visible' }, 'invisible': { 'visibility': 'hidden' }, 'collapse': { 'visibility': 'collapse' },
             ...Object.fromEntries([0, 10, 20, 30, 40, 50].map(i => [`z-${i}`, { 'z-index': i }])), 'z-auto': { 'z-index': 'auto' },
 
             // --- Borders ---
-            ...borderRadiusUtilities,
             'border': { 'border-width': '1px' }, ...Object.fromEntries([0, 2, 4, 8].map(i => [`border-${i}`, { 'border-width': `${i}px` }])),
             'border-t': { 'border-top-width': '1px' }, ...Object.fromEntries([0, 2, 4, 8].map(i => [`border-t-${i}`, { 'border-top-width': `${i}px` }])),
             'border-r': { 'border-right-width': '1px' }, ...Object.fromEntries([0, 2, 4, 8].map(i => [`border-r-${i}`, { 'border-right-width': `${i}px` }])),
@@ -364,49 +435,12 @@
             'will-change-auto': { 'will-change': 'auto' }, 'will-change-scroll': { 'will-change': 'scroll-position' }, 'will-change-contents': { 'will-change': 'contents' }, 'will-change-transform': { 'will-change': 'transform' },
         };
         
-        const sampleHtml = `<div class="p-6 bg-gray-900">
-  <p class="text-white text-lg mb-4">Space Between Utilities</p>
-  
-  <!-- Horizontal Spacing -->
-  <div class="mb-8 p-4 border border-dashed border-gray-600 rounded-lg">
-    <p class="text-sm text-gray-400 mb-2 font-mono">class="flex space-x-4"</p>
-    <div class="flex space-x-4">
-      <div class="bg-blue-500 rounded-md p-3 text-white">01</div>
-      <div class="bg-blue-500 rounded-md p-3 text-white">02</div>
-      <div class="bg-blue-500 rounded-md p-3 text-white">03</div>
+        const sampleHtml = `<div class="bg-gray-800 p-8">
+  <div class="container px-4">
+    <div class="bg-indigo-500 text-white p-4 rounded-lg">
+      This is a centered container with padding. Its max-width will now use 'rem' units.
     </div>
   </div>
-
-  <!-- Horizontal Spacing Reversed -->
-  <div class="mb-8 p-4 border border-dashed border-gray-600 rounded-lg">
-    <p class="text-sm text-gray-400 mb-2 font-mono">class="flex flex-row-reverse space-x-4 space-x-reverse"</p>
-    <div class="flex flex-row-reverse space-x-4 space-x-reverse">
-      <div class="bg-indigo-500 rounded-md p-3 text-white">01</div>
-      <div class="bg-indigo-500 rounded-md p-3 text-white">02</div>
-      <div class="bg-indigo-500 rounded-md p-3 text-white">03</div>
-    </div>
-  </div>
-
-  <!-- Vertical Spacing -->
-  <div class="mb-8 p-4 border border-dashed border-gray-600 rounded-lg">
-    <p class="text-sm text-gray-400 mb-2 font-mono">class="flex flex-col space-y-4"</p>
-    <div class="flex flex-col space-y-4">
-      <div class="bg-purple-500 rounded-md p-3 text-white">01</div>
-      <div class="bg-purple-500 rounded-md p-3 text-white">02</div>
-      <div class="bg-purple-500 rounded-md p-3 text-white">03</div>
-    </div>
-  </div>
-
-  <!-- Negative Horizontal Spacing -->
-  <div class="p-4 border border-dashed border-gray-600 rounded-lg">
-    <p class="text-sm text-gray-400 mb-2 font-mono">class="flex -space-x-4"</p>
-    <div class="flex -space-x-4">
-      <div class="w-16 h-16 rounded-full bg-red-500 border-4 border-gray-800"></div>
-      <div class="w-16 h-16 rounded-full bg-red-500 border-4 border-gray-800"></div>
-      <div class="w-16 h-16 rounded-full bg-red-500 border-4 border-gray-800"></div>
-    </div>
-  </div>
-
 </div>`;
         
         const htmlInput = document.getElementById('html-input');
@@ -448,6 +482,8 @@
             'checked': 'checked',
             'first': 'first-child',
             'last': 'last-child',
+            'first-of-type': 'first-of-type',
+            'last-of-type': 'last-of-type',
             'invalid': 'invalid',
             'empty': 'empty',
             'popover-open': 'popover-open',
@@ -524,6 +560,12 @@
 
         // Regular expression to catch special child-styling utilities.
         const directiveRegex = /^(divide-.+|-?space-x-.+|-?space-y-.+)/;
+        
+        const animatableProperties = new Set([
+            'color', 'background-color', 'border-color', 'text-decoration-color', 'fill', 'stroke',
+            'opacity', 'box-shadow', 'transform', 'filter', 'backdrop-filter',
+            '--tw-translate-x', '--tw-translate-y', '--tw-rotate', '--tw-skew-x', '--tw-skew-y', '--tw-scale-x', '--tw-scale-y'
+        ]);
 
         function parseTailwind(classString) {
             const style = {};
@@ -547,6 +589,28 @@
                 let baseClass = parts.pop();
                 const variantPrefixes = parts.sort();
                 const variantKey = variantPrefixes.join(':');
+
+                // --- Special Handling for 'container' ---
+                if (baseClass === 'container' && !variantKey) { // container should not be prefixed
+                    Object.assign(style, {
+                        width: '100%',
+                        marginLeft: 'auto',
+                        marginRight: 'auto'
+                    });
+                    // Add responsive max-width variants
+                    for (const bp in responsivePrefixes) {
+                        const existingVariant = variants.find(v => v.mediaQuery?.['min-width'] === responsivePrefixes[bp]);
+                        if (existingVariant) {
+                           existingVariant.style['max-width'] = responsivePrefixes[bp];
+                        } else {
+                            variants.push({
+                                mediaQuery: { 'min-width': responsivePrefixes[bp] },
+                                style: { 'max-width': responsivePrefixes[bp] }
+                            });
+                        }
+                    }
+                    continue; // Done with this class, move to the next one
+                }
 
                 // Check if the class is a special directive for child styling
                 if (directiveRegex.test(baseClass)) {
@@ -624,6 +688,25 @@
                     }
                 });
                 variants.push(variant);
+            }
+
+            // --- Smart Transition Logic ---
+            const isTransitionDefined = Object.keys(style).some(prop => prop.startsWith('transition'));
+            if (!isTransitionDefined) {
+                let hasAnimatableVariant = false;
+                for (const variant of variants) {
+                    for (const prop in variant.style) {
+                        if (animatableProperties.has(prop)) {
+                            hasAnimatableVariant = true;
+                            break;
+                        }
+                    }
+                    if (hasAnimatableVariant) break;
+                }
+
+                if (hasAnimatableVariant) {
+                    Object.assign(style, tailwindMap['transition'], { 'transition-duration': '300ms' }); // Apply default transition
+                }
             }
 
             postProcessStyle(style, style);
@@ -769,9 +852,9 @@
             const valuePart = coreClass.substring('space-x-'.length);
 
             let value;
-            if (valuePart.startsWith('[')) {
+            if (valuePart.startsWith('[') && valuePart.endsWith(']')) {
                 value = valuePart.slice(1, -1).replace(/_/g, ' ');
-            } else if (valuePart.startsWith('(')) {
+            } else if (valuePart.startsWith('(') && valuePart.endsWith(')')) {
                 value = `var(${valuePart.slice(1, -1)})`;
             } else if (spacingScale[valuePart]) {
                 value = spacingScale[valuePart];
@@ -802,8 +885,8 @@
                     Object.assign(childNode.style, styleToApply);
                 } else {
                     const variantConditions = {};
+                    const responsivePrefixes = { 'sm': '40rem', 'md': '48rem', 'lg': '64rem', 'xl': '80rem', '2xl': '96rem' };
                     variants.forEach(prefix => {
-                        const responsivePrefixes = { 'sm': '40rem', 'md': '48rem', 'lg': '64rem', 'xl': '80rem', '2xl': '96rem' };
                          if (responsivePrefixes[prefix]) {
                             variantConditions.mediaQuery = { 'min-width': responsivePrefixes[prefix] };
                         } else if (pseudoClassMap[prefix]) {
