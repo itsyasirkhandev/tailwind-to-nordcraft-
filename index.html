@@ -286,7 +286,6 @@
             
             // --- Layout ---
             'aspect-auto': { 'aspect-ratio': 'auto' }, 'aspect-square': { 'aspect-ratio': '1 / 1' }, 'aspect-video': { 'aspect-ratio': '16 / 9' },
-            'container': { 'width': '100%' },
             ...Object.fromEntries(Array.from({ length: 12 }, (_, i) => i + 1).map(i => [`columns-${i}`, { 'columns': `${i}` }])),
             'columns-auto': { 'columns': 'auto' }, 'columns-3xs': { 'columns': '16rem' }, 'columns-2xs': { 'columns': '18rem' }, 'columns-xs': { 'columns': '20rem' }, 'columns-sm': { 'columns': '24rem' }, 'columns-md': { 'columns': '28rem' }, 'columns-lg': { 'columns': '32rem' }, 'columns-xl': { 'columns': '36rem' }, 'columns-2xl': { 'columns': '42rem' }, 'columns-3xl': { 'columns': '48rem' }, 'columns-4xl': { 'columns': '56rem' }, 'columns-5xl': { 'columns': '64rem' }, 'columns-6xl': { 'columns': '72rem' }, 'columns-7xl': { 'columns': '80rem' },
             'break-after-auto': { 'break-after': 'auto' }, 'break-after-avoid': { 'break-after': 'avoid' }, 'break-after-all': { 'break-after': 'all' }, 'break-after-avoid-page': { 'break-after': 'avoid-page' }, 'break-after-page': { 'break-after': 'page' }, 'break-after-left': { 'break-after': 'left' }, 'break-after-right': { 'break-after': 'right' }, 'break-after-column': { 'break-after': 'column' },
@@ -436,12 +435,11 @@
             'will-change-auto': { 'will-change': 'auto' }, 'will-change-scroll': { 'will-change': 'scroll-position' }, 'will-change-contents': { 'will-change': 'contents' }, 'will-change-transform': { 'will-change': 'transform' },
         };
         
-        const sampleHtml = `<div class="p-4 bg-gray-900 group">
-  <div class="p-4 bg-slate-800 rounded-lg hover:bg-slate-700 hover:shadow-xl hover:-translate-y-1">
-    <p class="text-white group-hover:text-yellow-300">
-      Hover me! I have no 'transition' or 'duration' classes, 
-      but the hover effect will be animated automatically.
-    </p>
+        const sampleHtml = `<div class="bg-gray-800 p-8">
+  <div class="container px-4">
+    <div class="bg-indigo-500 text-white p-4 rounded-lg">
+      This is a centered container with padding.
+    </div>
   </div>
 </div>`;
         
@@ -577,7 +575,7 @@
 
             const classes = classString.split(/\s+/).filter(c => c);
             
-            const responsivePrefixes = { 'sm': '40rem', 'md': '48rem', 'lg': '64rem', 'xl': '80rem', '2xl': '96rem' };
+            const responsivePrefixes = { 'sm': '640px', 'md': '768px', 'lg': '1024px', 'xl': '1280px', '2xl': '1536px' };
             const arbitraryValueRegex = /(.+?)-\[(.+)\]/;
 
             for (let className of classes) {
@@ -591,6 +589,23 @@
                 let baseClass = parts.pop();
                 const variantPrefixes = parts.sort();
                 const variantKey = variantPrefixes.join(':');
+
+                // --- Special Handling for 'container' ---
+                if (baseClass === 'container' && !variantKey) { // container should not be prefixed
+                    Object.assign(style, {
+                        width: '100%',
+                        marginLeft: 'auto',
+                        marginRight: 'auto'
+                    });
+                    // Add responsive max-width variants
+                    for (const bp in responsivePrefixes) {
+                        variants.push({
+                            mediaQuery: { 'min-width': responsivePrefixes[bp] },
+                            style: { 'max-width': responsivePrefixes[bp] }
+                        });
+                    }
+                    continue; // Done with this class, move to the next one
+                }
 
                 // Check if the class is a special directive for child styling
                 if (directiveRegex.test(baseClass)) {
@@ -685,7 +700,7 @@
                 }
 
                 if (hasAnimatableVariant) {
-                    Object.assign(style, tailwindMap['transition']); // Apply default transition
+                    Object.assign(style, tailwindMap['transition'], { 'transition-duration': '300ms' }); // Apply default transition
                 }
             }
 
@@ -865,8 +880,8 @@
                     Object.assign(childNode.style, styleToApply);
                 } else {
                     const variantConditions = {};
+                    const responsivePrefixes = { 'sm': '640px', 'md': '768px', 'lg': '1024px', 'xl': '1280px', '2xl': '1536px' };
                     variants.forEach(prefix => {
-                        const responsivePrefixes = { 'sm': '40rem', 'md': '48rem', 'lg': '64rem', 'xl': '80rem', '2xl': '96rem' };
                          if (responsivePrefixes[prefix]) {
                             variantConditions.mediaQuery = { 'min-width': responsivePrefixes[prefix] };
                         } else if (pseudoClassMap[prefix]) {
