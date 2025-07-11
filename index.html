@@ -436,10 +436,11 @@
         };
         
         const sampleHtml = `<div class="p-4 text-white">
-  <p class="mb-2">This span is hidden on small screens and appears as a block on medium screens and up.</p>
-  <span class="hidden md:block font-semibold bg-indigo-500 p-2 rounded">
-    Visible on medium screens
-  </span>
+  <p class="mb-2">This div is hidden by default, but becomes a flex row at the 'md' breakpoint.</p>
+  <div class="hidden md:flex md:space-x-4">
+    <div class="bg-blue-500 p-3 rounded">Item 1</div>
+    <div class="bg-indigo-500 p-3 rounded">Item 2</div>
+  </div>
 </div>`;
         
         const htmlInput = document.getElementById('html-input');
@@ -775,11 +776,6 @@
                     ...style
                 };
 
-                // Only add a default flex-direction if flex is explicitly used
-                if (finalStyle.display?.includes('flex') && !finalStyle['flex-direction']) {
-                    finalStyle['flex-direction'] = 'row';
-                }
-                
                 nodeData = {
                     type: 'element',
                     tag: tagName === 'body' ? 'div' : tagName,
@@ -791,6 +787,18 @@
                     variants: variants,
                     children: []
                 };
+
+                // Add default flex-direction where needed, including in variants
+                if (nodeData.style.display?.includes('flex') && !nodeData.style['flex-direction']) {
+                    nodeData.style['flex-direction'] = 'row';
+                }
+                if (nodeData.variants) {
+                    for (const variant of nodeData.variants) {
+                        if (variant.style.display?.includes('flex') && !variant.style['flex-direction']) {
+                            variant.style['flex-direction'] = 'row';
+                        }
+                    }
+                }
 
                 for (const attr of domNode.attributes) {
                     if (attr.name !== 'class' && attr.name !== 'style') {
