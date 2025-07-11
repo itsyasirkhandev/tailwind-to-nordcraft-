@@ -255,7 +255,7 @@
         }
         const combinedSpacing = {...spacingScale, ...fractionalTranslates};
         for (const [key, val] of Object.entries(combinedSpacing)) {
-            const keyStr = String(key).replace('/', '-');
+            const keyStr = String(key).replace(/\//g, '-');
             const negVal = (val !== '0px' && val !== '0') ? `-${val}` : val;
             transformUtilities[`translate-x-${keyStr}`] = { '--tw-translate-x': val };
             transformUtilities[`-translate-x-${keyStr}`] = { '--tw-translate-x': negVal };
@@ -436,49 +436,13 @@
             'will-change-auto': { 'will-change': 'auto' }, 'will-change-scroll': { 'will-change': 'scroll-position' }, 'will-change-contents': { 'will-change': 'contents' }, 'will-change-transform': { 'will-change': 'transform' },
         };
         
-        const sampleHtml = `<div class="p-6 bg-gray-900">
-  <p class="text-white text-lg mb-4">Space Between Utilities</p>
-  
-  <!-- Horizontal Spacing -->
-  <div class="mb-8 p-4 border border-dashed border-gray-600 rounded-lg">
-    <p class="text-sm text-gray-400 mb-2 font-mono">class="flex space-x-4"</p>
-    <div class="flex space-x-4">
-      <div class="bg-blue-500 rounded-md p-3 text-white">01</div>
-      <div class="bg-blue-500 rounded-md p-3 text-white">02</div>
-      <div class="bg-blue-500 rounded-md p-3 text-white">03</div>
-    </div>
+        const sampleHtml = `<div class="p-4 bg-gray-900 group">
+  <div class="p-4 bg-slate-800 rounded-lg hover:bg-slate-700 hover:shadow-xl hover:-translate-y-1">
+    <p class="text-white group-hover:text-yellow-300">
+      Hover me! I have no 'transition' or 'duration' classes, 
+      but the hover effect will be animated automatically.
+    </p>
   </div>
-
-  <!-- Horizontal Spacing Reversed -->
-  <div class="mb-8 p-4 border border-dashed border-gray-600 rounded-lg">
-    <p class="text-sm text-gray-400 mb-2 font-mono">class="flex flex-row-reverse space-x-4 space-x-reverse"</p>
-    <div class="flex flex-row-reverse space-x-4 space-x-reverse">
-      <div class="bg-indigo-500 rounded-md p-3 text-white">01</div>
-      <div class="bg-indigo-500 rounded-md p-3 text-white">02</div>
-      <div class="bg-indigo-500 rounded-md p-3 text-white">03</div>
-    </div>
-  </div>
-
-  <!-- Vertical Spacing -->
-  <div class="mb-8 p-4 border border-dashed border-gray-600 rounded-lg">
-    <p class="text-sm text-gray-400 mb-2 font-mono">class="flex flex-col space-y-4"</p>
-    <div class="flex flex-col space-y-4">
-      <div class="bg-purple-500 rounded-md p-3 text-white">01</div>
-      <div class="bg-purple-500 rounded-md p-3 text-white">02</div>
-      <div class="bg-purple-500 rounded-md p-3 text-white">03</div>
-    </div>
-  </div>
-
-  <!-- Negative Horizontal Spacing -->
-  <div class="p-4 border border-dashed border-gray-600 rounded-lg">
-    <p class="text-sm text-gray-400 mb-2 font-mono">class="flex -space-x-4"</p>
-    <div class="flex -space-x-4">
-      <div class="w-16 h-16 rounded-full bg-red-500 border-4 border-gray-800"></div>
-      <div class="w-16 h-16 rounded-full bg-red-500 border-4 border-gray-800"></div>
-      <div class="w-16 h-16 rounded-full bg-red-500 border-4 border-gray-800"></div>
-    </div>
-  </div>
-
 </div>`;
         
         const htmlInput = document.getElementById('html-input');
@@ -520,6 +484,8 @@
             'checked': 'checked',
             'first': 'first-child',
             'last': 'last-child',
+            'first-of-type': 'first-of-type',
+            'last-of-type': 'last-of-type',
             'invalid': 'invalid',
             'empty': 'empty',
             'popover-open': 'popover-open',
@@ -596,6 +562,12 @@
 
         // Regular expression to catch special child-styling utilities.
         const directiveRegex = /^(divide-.+|-?space-x-.+|-?space-y-.+)/;
+        
+        const animatableProperties = new Set([
+            'color', 'background-color', 'border-color', 'text-decoration-color', 'fill', 'stroke',
+            'opacity', 'box-shadow', 'transform', 'filter', 'backdrop-filter',
+            '--tw-translate-x', '--tw-translate-y', '--tw-rotate', '--tw-skew-x', '--tw-skew-y', '--tw-scale-x', '--tw-scale-y'
+        ]);
 
         function parseTailwind(classString) {
             const style = {};
@@ -696,6 +668,25 @@
                     }
                 });
                 variants.push(variant);
+            }
+
+            // --- Smart Transition Logic ---
+            const isTransitionDefined = Object.keys(style).some(prop => prop.startsWith('transition'));
+            if (!isTransitionDefined) {
+                let hasAnimatableVariant = false;
+                for (const variant of variants) {
+                    for (const prop in variant.style) {
+                        if (animatableProperties.has(prop)) {
+                            hasAnimatableVariant = true;
+                            break;
+                        }
+                    }
+                    if (hasAnimatableVariant) break;
+                }
+
+                if (hasAnimatableVariant) {
+                    Object.assign(style, tailwindMap['transition']); // Apply default transition
+                }
             }
 
             postProcessStyle(style, style);
