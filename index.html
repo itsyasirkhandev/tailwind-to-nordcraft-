@@ -120,11 +120,11 @@
         const generatedColorUtilities = {};
         const colorProps = {
             'bg': 'background-color', 'text': 'color', 'border': 'border-color',
-            'ring': '--ring-color', 'ring-offset': '--ring-offset-color',
+            'ring': '--tw-ring-color', 'ring-offset': '--ring-offset-color',
             'accent': 'accent-color', 'caret': 'caret-color', 'fill': 'fill', 'stroke': 'stroke',
             'decoration': 'text-decoration-color',
             'from': '--tw-gradient-from-color', 'via': '--tw-gradient-via-color', 'to': '--tw-gradient-to-color',
-            'divide': '--tw-divide-color',
+            'divide': 'border-color', // FIX: Changed from --tw-divide-color to border-color for simplicity in applyDirectives
             'shadow': '--tw-shadow-color',
             'outline': 'outline-color',
         };
@@ -152,25 +152,21 @@
         const genXYSpacing = (prefix, propX, propY) => Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`${prefix}-${k}`, { [propX]: v, [propY]: v }]));
         const genNegativeMargin = (prefix, prop) => Object.fromEntries(Object.entries(spacingScale).filter(([k,v]) => v!=='0px').map(([k, v]) => [`-${prefix}-${k}`, { [prop]: `-${v}` }]));
         
-        // --- Generator for complex border-radius classes ---
         const borderRadiusSizes = { 'none': '0px', 'sm': '0.125rem', '': '0.25rem', 'md': '0.375rem', 'lg': '0.5rem', 'xl': '0.75rem', '2xl': '1rem', '3xl': '1.5rem', 'full': '9999px' };
         const borderRadiusSides = { 't': ['top-left', 'top-right'], 'r': ['top-right', 'bottom-right'], 'b': ['bottom-right', 'bottom-left'], 'l': ['top-left', 'bottom-left']};
         const borderRadiusCorners = { 'tl': ['top-left'], 'tr': ['top-right'], 'br': ['bottom-right'], 'bl': ['bottom-left'] };
         
         let borderRadiusUtilities = {};
         for (const [sizeKey, sizeValue] of Object.entries(borderRadiusSizes)) {
-            // Full radius: rounded, rounded-sm, etc.
             const key = sizeKey === '' ? 'rounded' : `rounded-${sizeKey}`;
             borderRadiusUtilities[key] = { 'border-radius': sizeValue };
             
-            // Side-specific: rounded-t-sm, rounded-r-md, etc.
             for(const [sideKey, sideProps] of Object.entries(borderRadiusSides)) {
                 const sideClassKey = `rounded-${sideKey}` + (sizeKey ? `-${sizeKey}`: '');
                 const style = {};
                 for (const prop of sideProps) { style[`border-${prop}-radius`] = sizeValue; }
                 borderRadiusUtilities[sideClassKey] = style;
             }
-             // Corner-specific: rounded-tl-sm, rounded-br-md, etc.
             for(const [cornerKey, cornerProps] of Object.entries(borderRadiusCorners)) {
                 const cornerClassKey = `rounded-${cornerKey}` + (sizeKey ? `-${sizeKey}`: '');
                  const style = {};
@@ -179,7 +175,6 @@
             }
         }
 
-        // --- Generator for complex inset (top/right/bottom/left) classes ---
         const insetScale = { ...spacingScale, 'auto': 'auto', '1/2': '50%', '1/3': '33.333333%', '2/3': '66.666667%', '1/4': '25%', '3/4': '75%', 'full': '100%' };
         let insetUtilities = {};
         for (const [key, value] of Object.entries(insetScale)) {
@@ -203,7 +198,6 @@
             }
         }
 
-        // --- Generator for Transitions ---
         const transitionProperties = {
             'none': { 'transition-property': 'none' },
             'all': { 'transition-property': 'all', 'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)', 'transition-duration': '150ms' },
@@ -231,7 +225,6 @@
             transitionUtilities[`delay-${key}`] = { 'transition-delay': val };
         }
 
-        // --- Generator for Transforms ---
         const transformBase = {
             'transform': { 'transform': 'translateX(var(--tw-translate-x, 0)) translateY(var(--tw-translate-y, 0)) rotate(var(--tw-rotate, 0)) skewX(var(--tw-skew-x, 0)) skewY(var(--tw-skew-y, 0)) scaleX(var(--tw-scale-x, 1)) scaleY(var(--tw-scale-y, 1))' },
             'transform-gpu': { 'transform': 'translate3d(var(--tw-translate-x, 0), var(--tw-translate-y, 0), 0) rotate(var(--tw-rotate, 0)) skewX(var(--tw-skew-x, 0)) skewY(var(--tw-skew-y, 0)) scaleX(var(--tw-scale-x, 1)) scaleY(var(--tw-scale-y, 1))' },
@@ -272,6 +265,20 @@
             transformUtilities[`origin-${key}`] = { 'transform-origin': val };
         }
 
+        // NEW: Generator for more robust border widths
+        const borderWidths = { '0': '0px', '2': '2px', '4': '4px', '8': '8px', '': '1px' };
+        let newBorderUtilities = {};
+        for (const [widthKey, widthValue] of Object.entries(borderWidths)) {
+            const key = widthKey === '' ? '' : `-${widthKey}`;
+            newBorderUtilities[`border${key}`] = { 'border-width': widthValue };
+            newBorderUtilities[`border-x${key}`] = { 'border-left-width': widthValue, 'border-right-width': widthValue };
+            newBorderUtilities[`border-y${key}`] = { 'border-top-width': widthValue, 'border-bottom-width': widthValue };
+            newBorderUtilities[`border-t${key}`] = { 'border-top-width': widthValue };
+            newBorderUtilities[`border-r${key}`] = { 'border-right-width': widthValue };
+            newBorderUtilities[`border-b${key}`] = { 'border-bottom-width': widthValue };
+            newBorderUtilities[`border-l${key}`] = { 'border-left-width': widthValue };
+        }
+
 
         const tailwindMap = {
             ...generatedColorUtilities,
@@ -279,6 +286,7 @@
             ...insetUtilities,
             ...transitionUtilities,
             ...transformUtilities,
+            ...newBorderUtilities, // FIX: Use the new, more robust border utilities
 
             // --- Accessibility ---
             'sr-only': { position: 'absolute', width: '1px', height: '1px', padding: '0', margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', 'white-space': 'nowrap', 'border-width': '0' },
@@ -307,13 +315,9 @@
             ...Object.fromEntries([0, 10, 20, 30, 40, 50].map(i => [`z-${i}`, { 'z-index': i }])), 'z-auto': { 'z-index': 'auto' },
 
             // --- Borders ---
-            'border': { 'border-width': '1px' }, ...Object.fromEntries([0, 2, 4, 8].map(i => [`border-${i}`, { 'border-width': `${i}px` }])),
-            'border-t': { 'border-top-width': '1px' }, ...Object.fromEntries([0, 2, 4, 8].map(i => [`border-t-${i}`, { 'border-top-width': `${i}px` }])),
-            'border-r': { 'border-right-width': '1px' }, ...Object.fromEntries([0, 2, 4, 8].map(i => [`border-r-${i}`, { 'border-right-width': `${i}px` }])),
-            'border-b': { 'border-bottom-width': '1px' }, ...Object.fromEntries([0, 2, 4, 8].map(i => [`border-b-${i}`, { 'border-bottom-width': `${i}px` }])),
-            'border-l': { 'border-left-width': '1px' }, ...Object.fromEntries([0, 2, 4, 8].map(i => [`border-l-${i}`, { 'border-left-width': `${i}px` }])),
             'border-solid': { 'border-style': 'solid' }, 'border-dashed': { 'border-style': 'dashed' }, 'border-dotted': { 'border-style': 'dotted' }, 'border-double': { 'border-style': 'double' }, 'border-hidden': { 'border-style': 'hidden' }, 'border-none': { 'border-style': 'none' },
             ...Object.fromEntries([0, 5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 100].map(o => [`border-opacity-${o}`, { '_border_opacity': o / 100 }])),
+            'divide-solid': { 'border-style': 'solid' }, 'divide-dashed': { 'border-style': 'dashed' }, 'divide-dotted': { 'border-style': 'dotted' }, 'divide-double': { 'border-style': 'double' }, 'divide-none': { 'border-style': 'none' },
             'outline-0': { 'outline-width': '0px' }, 'outline-1': { 'outline-width': '1px' }, 'outline-2': { 'outline-width': '2px' }, 'outline-4': { 'outline-width': '4px' }, 'outline-8': { 'outline-width': '8px' },
             'outline': { 'outline-style': 'solid' }, 'outline-dashed': { 'outline-style': 'dashed' }, 'outline-dotted': { 'outline-style': 'dotted' }, 'outline-double': { 'outline-style': 'double' },
             'outline-none': { 'outline': '2px solid transparent', 'outline-offset': '2px' },
@@ -353,8 +357,13 @@
             ...genSpacing('m', 'margin'), ...genXYSpacing('mx', 'margin-left', 'margin-right'), ...genXYSpacing('my', 'margin-top', 'margin-bottom'), ...genSpacing('mt', 'margin-top'), ...genSpacing('mr', 'margin-right'), ...genSpacing('mb', 'margin-bottom'), ...genSpacing('ml', 'margin-left'),
             ...genNegativeMargin('m', 'margin'), ...genNegativeMargin('mx', 'margin-left', 'margin-right'), ...genNegativeMargin('my', 'margin-top', 'margin-bottom'), ...genNegativeMargin('mt', 'margin-top'), ...genNegativeMargin('mr', 'margin-right'), ...genNegativeMargin('mb', 'margin-bottom'), ...genNegativeMargin('ml', 'margin-left'),
             'mx-auto': { 'margin-left': 'auto', 'margin-right': 'auto' },
-            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`gap-${k}`, { 'column-gap': v, 'row-gap': v }])), ...genSpacing('gap-x', 'column-gap'), ...genSpacing('gap-y', 'row-gap'),
-            
+            // NEW: Added gap utilities
+            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`gap-${k}`, { 'gap': v }])),
+            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`gap-x-${k}`, { 'column-gap': v }])),
+            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`gap-y-${k}`, { 'row-gap': v }])),
+            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`space-x-${k}`, { '--tw-space-x-reverse': '0', 'margin-right': `calc(${v} * var(--tw-space-x-reverse))`, 'margin-left': `calc(${v} * calc(1 - var(--tw-space-x-reverse)))` }])),
+            ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`space-y-${k}`, { '--tw-space-y-reverse': '0', 'margin-top': `calc(${v} * calc(1 - var(--tw-space-y-reverse)))`, 'margin-bottom': `calc(${v} * var(--tw-space-y-reverse))` }])),
+
             // --- Sizing ---
             ...Object.fromEntries(Object.entries(spacingScale).map(([k, v]) => [`w-${k}`, { width: v }])), 'w-auto': { 'width': 'auto' }, 'w-1/2': { 'width': '50%' }, 'w-1/3': { 'width': '33.333333%' }, 'w-2/3': { 'width': '66.666667%' }, 'w-1/4': { 'width': '25%' }, 'w-2/4': { 'width': '50%' }, 'w-3/4': { 'width': '75%' }, 'w-1/5': { 'width': '20%' }, 'w-2/5': { 'width': '40%' }, 'w-3/5': { 'width': '60%' }, 'w-4/5': { 'width': '80%' }, 'w-1/6': { 'width': '16.666667%' }, 'w-5/6': { 'width': '83.333333%' }, 'w-full': { 'width': '100%' }, 'w-screen': { 'width': '100vw' }, 'w-min': { 'width': 'min-content' }, 'w-max': { 'width': 'max-content' }, 'w-fit': { 'width': 'fit-content' },
             'min-w-0': { 'min-width': '0px' }, 'min-w-full': { 'min-width': '100%' }, 'min-w-min': { 'min-width': 'min-content' }, 'min-w-max': { 'min-width': 'max-content' }, 'min-w-fit': { 'min-width': 'fit-content' },
@@ -370,6 +379,7 @@
             'antialiased': { '-webkit-font-smoothing': 'antialiased', '-moz-osx-font-smoothing': 'grayscale' }, 'subpixel-antialiased': { '-webkit-font-smoothing': 'auto', '-moz-osx-font-smoothing': 'auto' },
             'italic': { 'font-style': 'italic' }, 'not-italic': { 'font-style': 'normal' },
             'font-thin': { 'font-weight': '100' }, 'font-extralight': { 'font-weight': '200' }, 'font-light': { 'font-weight': '300' }, 'font-normal': { 'font-weight': '400' }, 'font-medium': { 'font-weight': '500' }, 'font-semibold': { 'font-weight': '600' }, 'font-bold': { 'font-weight': '700' }, 'font-extrabold': { 'font-weight': '800' }, 'font-black': { 'font-weight': '900' },
+            // NEW: Added tracking utilities for letter-spacing
             'tracking-tighter': { 'letter-spacing': '-0.05em' }, 'tracking-tight': { 'letter-spacing': '-0.025em' }, 'tracking-normal': { 'letter-spacing': '0em' }, 'tracking-wide': { 'letter-spacing': '0.025em' }, 'tracking-wider': { 'letter-spacing': '0.05em' }, 'tracking-widest': { 'letter-spacing': '0.1em' },
             'leading-3': { 'line-height': '.75rem' }, 'leading-4': { 'line-height': '1rem' }, 'leading-5': { 'line-height': '1.25rem' }, 'leading-6': { 'line-height': '1.5rem' }, 'leading-7': { 'line-height': '1.75rem' }, 'leading-8': { 'line-height': '2rem' }, 'leading-9': { 'line-height': '2.25rem' }, 'leading-10': { 'line-height': '2.5rem' }, 'leading-none': { 'line-height': '1' }, 'leading-tight': { 'line-height': '1.25' }, 'leading-snug': { 'line-height': '1.375' }, 'leading-normal': { 'line-height': '1.5' }, 'leading-relaxed': { 'line-height': '1.625' }, 'leading-loose': { 'line-height': '2' },
             'list-none': { 'list-style-type': 'none' }, 'list-disc': { 'list-style-type': 'disc' }, 'list-decimal': { 'list-style-type': 'decimal' }, 'list-inside': { 'list-style-position': 'inside' }, 'list-outside': { 'list-style-position': 'outside' },
@@ -399,7 +409,6 @@
             'bg-gradient-to-t': { 'background-image': 'linear-gradient(to top, var(--tw-gradient-stops))' }, 'bg-gradient-to-tr': { 'background-image': 'linear-gradient(to top right, var(--tw-gradient-stops))' }, 'bg-gradient-to-r': { 'background-image': 'linear-gradient(to right, var(--tw-gradient-stops))' }, 'bg-gradient-to-br': { 'background-image': 'linear-gradient(to bottom right, var(--tw-gradient-stops))' }, 'bg-gradient-to-b': { 'background-image': 'linear-gradient(to bottom, var(--tw-gradient-stops))' }, 'bg-gradient-to-bl': { 'background-image': 'linear-gradient(to bottom left, var(--tw-gradient-stops))' }, 'bg-gradient-to-l': { 'background-image': 'linear-gradient(to left, var(--tw-gradient-stops))' }, 'bg-gradient-to-tl': { 'background-image': 'linear-gradient(to top left, var(--tw-gradient-stops))' },
             
             // --- Effects ---
-            'shadow-xs': {'box-shadow': '0 0 0 1px rgba(0, 0, 0, 0.05)'},
             'shadow-sm': { 'box-shadow': '0 1px 2px 0 rgb(0 0 0 / 0.05)' },
             'shadow': { 'box-shadow': '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)' },
             'shadow-md': { 'box-shadow': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' },
@@ -407,7 +416,6 @@
             'shadow-xl': { 'box-shadow': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)' },
             'shadow-2xl': { 'box-shadow': '0 25px 50px -12px rgb(0 0 0 / 0.25)' },
             'shadow-inner': { 'box-shadow': 'inset 0 2px 4px 0 rgb(0 0 0 / 0.05)' },
-            'shadow-outline': {'box-shadow': '0 0 0 3px rgba(59, 130, 246, 0.5)'},
             'shadow-none': { 'box-shadow': 'none' },
             ...Object.fromEntries([0, 5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 100].map(o => [`opacity-${o}`, { opacity: o / 100 }])),
             'mix-blend-normal': { 'mix-blend-mode': 'normal' }, 'mix-blend-multiply': { 'mix-blend-mode': 'multiply' }, 'mix-blend-screen': { 'mix-blend-mode': 'screen' }, 'mix-blend-overlay': { 'mix-blend-mode': 'overlay' }, 'mix-blend-darken': { 'mix-blend-mode': 'darken' }, 'mix-blend-lighten': { 'mix-blend-mode': 'lighten' }, 'mix-blend-color-dodge': { 'mix-blend-mode': 'color-dodge' }, 'mix-blend-color-burn': { 'mix-blend-mode': 'color-burn' }, 'mix-blend-hard-light': { 'mix-blend-mode': 'hard-light' }, 'mix-blend-soft-light': { 'mix-blend-mode': 'soft-light' }, 'mix-blend-difference': { 'mix-blend-mode': 'difference' }, 'mix-blend-exclusion': { 'mix-blend-mode': 'exclusion' }, 'mix-blend-hue': { 'mix-blend-mode': 'hue' }, 'mix-blend-saturation': { 'mix-blend-mode': 'saturation' }, 'mix-blend-color': { 'mix-blend-mode': 'color' }, 'mix-blend-luminosity': { 'mix-blend-mode': 'luminosity' },
@@ -435,12 +443,30 @@
             'will-change-auto': { 'will-change': 'auto' }, 'will-change-scroll': { 'will-change': 'scroll-position' }, 'will-change-contents': { 'will-change': 'contents' }, 'will-change-transform': { 'will-change': 'transform' },
         };
         
-        const sampleHtml = `<div class="p-4 text-white">
-  <p class="mb-2">This div is hidden by default, but becomes a flex row at the 'md' breakpoint.</p>
-  <div class="hidden md:flex md:space-x-4">
-    <div class="bg-blue-500 p-3 rounded">Item 1</div>
-    <div class="bg-indigo-500 p-3 rounded">Item 2</div>
-  </div>
+        // NEW: Updated sample HTML to better reflect the fixed capabilities.
+        const sampleHtml = `<div class="p-6 bg-slate-800 rounded-xl">
+    <!-- Demonstrates responsive classes (flex-col -> sm:flex-row) and gap -->
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+        <h2 class="text-2xl font-bold text-white">User List</h2>
+        <button class="px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-500 transition-colors">Add User</button>
+    </div>
+
+    <!-- Demonstrates space-y, divide-y, and hover variants on group children -->
+    <div class="space-y-4 divide-y divide-gray-700">
+        <div class="pt-4 flex items-center justify-between group">
+            <p class="text-gray-300">user@example.com</p>
+            <span class="text-sm font-medium text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">Remove</span>
+        </div>
+        <div class="pt-4 flex items-center justify-between group">
+            <p class="text-gray-300">another@example.com</p>
+            <span class="text-sm font-medium text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">Remove</span>
+        </div>
+    </div>
+
+    <!-- Demonstrates border-x-4 -->
+    <p class="mt-6 p-4 border-x-4 border-indigo-500 bg-indigo-900/50 text-indigo-200">
+        This container has X-axis borders.
+    </p>
 </div>`;
         
         const htmlInput = document.getElementById('html-input');
@@ -469,42 +495,16 @@
             return `rgba(${[(c>>16)&255, (c>>8)&255, c&255].join(',')},${alpha})`;
         }
         
-        // Maps Tailwind prefixes to the desired JSON keys for variants.
         const pseudoClassMap = {
-            'hover': 'hover',
-            'active': 'active',
-            'focus-visible': 'focus-visible',
-            'disabled': 'disabled',
-            'focus': 'focus',
-            'focus-within': 'focus-within',
-            'even': 'nth-child(even)',
-            'odd': 'nth-child(odd)',
-            'checked': 'checked',
-            'first': 'first-child',
-            'last': 'last-child',
-            'first-of-type': 'first-of-type',
-            'last-of-type': 'last-of-type',
-            'invalid': 'invalid',
-            'empty': 'empty',
-            'popover-open': 'popover-open',
-            'autofill': 'autofill',
-            'visited': 'visited',
-            'required': 'required',
-            'valid': 'valid',
-            'placeholder': 'placeholder',
-            'group-hover': 'hover', // Map group-hover to hover
-            'group-focus': 'focus', // Map group-focus to focus
-            'dark': 'dark'
+            'hover': 'hover', 'active': 'active', 'focus-visible': 'focus-visible', 'disabled': 'disabled',
+            'focus': 'focus', 'focus-within': 'focus-within', 'even': 'nth-child(even)', 'odd': 'nth-child(odd)',
+            'checked': 'checked', 'first': 'first-child', 'last': 'last-child', 'first-of-type': 'first-of-type',
+            'last-of-type': 'last-of-type', 'invalid': 'invalid', 'empty': 'empty', 'popover-open': 'popover-open',
+            'autofill': 'autofill', 'visited': 'visited', 'required': 'required', 'valid': 'valid',
+            'placeholder': 'placeholder', 'group-hover': 'hover', 'group-focus': 'focus', 'dark': 'dark'
         };
 
-        /**
-         * A helper function that runs after initial parsing to compose complex utilities
-         * like gradients and conditionally apply others like gaps.
-         * @param {object} styleObject - The style object to process.
-         * @param {object} baseStyleContext - The base style of the element, for context.
-         */
         const postProcessStyle = (styleObject, baseStyleContext) => {
-            // --- Compose Gradients ---
             if (styleObject['background-image'] && styleObject['background-image'].includes('var(--tw-gradient-stops)')) {
                 const from = styleObject['--tw-gradient-from-color'];
                 const via = styleObject['--tw-gradient-via-color'];
@@ -527,38 +527,22 @@
                     delete styleObject['background-image'];
                 }
             }
-            // Clean up temporary gradient color properties regardless.
             delete styleObject['--tw-gradient-from-color'];
             delete styleObject['--tw-gradient-via-color'];
             delete styleObject['--tw-gradient-to-color'];
 
-            // --- Compose Background Color with Opacity ---
             if (styleObject.hasOwnProperty('background-color') && styleObject.hasOwnProperty('_bg_opacity')) {
                 const color = styleObject['background-color'];
                 const opacity = styleObject['_bg_opacity'];
                 
-                // Only apply if the color is a valid hex code
                 if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(color)) {
                      styleObject['background-color'] = hexToRgba(color, opacity);
                 }
                 
                 delete styleObject['_bg_opacity'];
             }
-
-            // --- Clean Gaps ---
-            const hasGap = 'column-gap' in styleObject || 'row-gap' in styleObject;
-            if (hasGap) {
-                const effectiveDisplay = styleObject.display || baseStyleContext.display;
-                const isFlexOrGrid = effectiveDisplay && (effectiveDisplay.includes('flex') || effectiveDisplay.includes('grid'));
-                
-                if (!isFlexOrGrid) {
-                    delete styleObject['column-gap'];
-                    delete styleObject['row-gap'];
-                }
-            }
         };
 
-        // Regular expression to catch special child-styling utilities.
         const directiveRegex = /^(divide-.+|-?space-x-.+|-?space-y-.+)/;
         
         const animatableProperties = new Set([
@@ -573,7 +557,12 @@
             const groupedVariants = {};
             const directives = [];
 
-            const classes = classString.split(/\s+/).filter(c => c);
+            // NEW: Filter out prose classes as they are not supported
+            let classes = classString.split(/\s+/).filter(c => c && !c.startsWith('prose'));
+            const proseClasses = classString.split(/\s+/).filter(c => c && c.startsWith('prose'));
+            if (proseClasses.length > 0) {
+                console.warn(`[Converter] Unsupported 'prose' classes found and ignored: ${proseClasses.join(' ')}. The typography plugin is too complex for this converter.`);
+            }
             
             const responsivePrefixes = { 'sm': '40rem', 'md': '48rem', 'lg': '64rem', 'xl': '80rem', '2xl': '96rem' };
             const arbitraryValueRegex = /(.+?)-\[(.+)\]/;
@@ -590,14 +579,12 @@
                 const variantPrefixes = parts.sort();
                 const variantKey = variantPrefixes.join(':');
 
-                // --- Special Handling for 'container' ---
-                if (baseClass === 'container' && !variantKey) { // container should not be prefixed
+                if (baseClass === 'container' && !variantKey) {
                     Object.assign(style, {
                         width: '100%',
                         marginLeft: 'auto',
                         marginRight: 'auto'
                     });
-                    // Add responsive max-width variants
                     for (const bp in responsivePrefixes) {
                         const existingVariant = variants.find(v => v.mediaQuery?.['min-width'] === responsivePrefixes[bp]);
                         if (existingVariant) {
@@ -609,10 +596,9 @@
                             });
                         }
                     }
-                    continue; // Done with this class, move to the next one
+                    continue;
                 }
 
-                // Check if the class is a special directive for child styling
                 if (directiveRegex.test(baseClass)) {
                     directives.push({ className: baseClass, variants: variantPrefixes });
                     continue;
@@ -690,7 +676,6 @@
                 variants.push(variant);
             }
 
-            // --- Smart Transition Logic ---
             const isTransitionDefined = Object.keys(style).some(prop => prop.startsWith('transition'));
             if (!isTransitionDefined) {
                 let hasAnimatableVariant = false;
@@ -705,7 +690,7 @@
                 }
 
                 if (hasAnimatableVariant) {
-                    Object.assign(style, tailwindMap['transition'], { 'transition-duration': '300ms' }); // Apply default transition
+                    Object.assign(style, tailwindMap['transition-colors']); 
                 }
             }
 
@@ -717,11 +702,6 @@
             return { style, variants, directives };
         }
         
-        /**
-         * Parses the content of <style> tags to find component classes with @apply.
-         * @param {string} htmlString - The full HTML input string.
-         * @returns {object} A map of component class names to their Tailwind utility strings.
-         */
         const parseStyleTag = (htmlString) => {
             const componentClassMap = {};
             const styleRegex = /<style[^>]*>([\s\S]*?)<\/style>/g;
@@ -740,12 +720,6 @@
             return componentClassMap;
         };
 
-        /**
-         * Expands a class string by replacing component classes with their utility strings.
-         * @param {string} classString - The class string from the HTML element.
-         * @param {object} componentMap - The map of component classes to utilities.
-         * @returns {string} The expanded string of utility classes.
-         */
         const expandClasses = (classString, componentMap) => {
             if (!classString) return '';
             const classes = classString.split(/\s+/);
@@ -788,7 +762,6 @@
                     children: []
                 };
 
-                // Add default flex-direction where needed, including in variants
                 if (nodeData.style.display?.includes('flex') && !nodeData.style['flex-direction']) {
                     nodeData.style['flex-direction'] = 'row';
                 }
@@ -834,16 +807,9 @@
             return null;
         }
 
-        /**
-         * Parses a space-* class to get the CSS value.
-         * @param {string} className - The full Tailwind class name (e.g., '-space-x-4').
-         * @param {object} spacingScale - The map of spacing keys to values.
-         * @returns {string|null} - The CSS value string (e.g., 'calc(1rem * -1)') or null.
-         */
         function parseSpaceValue(className, spacingScale) {
             const isNegative = className.startsWith('-');
             const coreClass = isNegative ? className.substring(1) : className;
-            // 'space-x-'.length is the same as 'space-y-'.length
             const valuePart = coreClass.substring('space-x-'.length);
 
             let value;
@@ -857,20 +823,9 @@
                 return null;
             }
 
-            if (isNegative) {
-                return `calc(${value} * -1)`;
-            }
-
-            return value;
+            return isNegative ? `calc(${value} * -1)` : value;
         }
 
-        /**
-         * Helper function to apply styles to a list of child nodes, handling variants.
-         * @param {string[]} childIds - Array of node IDs to apply styles to.
-         * @param {object} styleToApply - The CSS style object.
-         * @param {string[]} variants - Array of variant prefixes (e.g., ['hover', 'md']).
-         * @param {object} allNodes - The map of all nodes in the tree.
-         */
         function applyStylesToChildren(childIds, styleToApply, variants, allNodes) {
              for (const childId of childIds) {
                 const childNode = allNodes[childId];
@@ -889,7 +844,6 @@
                         }
                     });
 
-                    // Find an existing variant object to merge with
                     let targetVariant = childNode.variants.find(v => {
                         const vKeys = Object.keys(v).filter(k => k !== 'style');
                         const cKeys = Object.keys(variantConditions);
@@ -918,7 +872,6 @@
                 const elementChildren = parentNode.children.filter(id => nodes[id]?.type === 'element');
                 if (elementChildren.length === 0) continue;
 
-                // Group directives by the variant they apply to (e.g., 'base', 'hover', 'md:hover')
                 const directivesByVariant = parentNode.directives.reduce((acc, directive) => {
                     const variantKey = directive.variants.join(':') || 'base';
                     if (!acc[variantKey]) {
@@ -929,73 +882,47 @@
                 }, {});
 
 
-                // For each variant group, process all its directives together
                 for (const variantKey in directivesByVariant) {
                     const { classNames, variants: directiveVariants } = directivesByVariant[variantKey];
                     
-                    // --- Handle Divide ---
-                    const divideXValueClass = classNames.find(c => /^divide-x($|-[\d.]+$)/.test(c));
-                    const divideYValueClass = classNames.find(c => /^divide-y($|-[\d.]+$)/.test(c));
-                    const divideColorClass = classNames.find(c => tailwindMap[c]?.['--tw-divide-color']);
-                    const divideStyleClass = classNames.find(c => /^divide-(solid|dashed|dotted|double|none)$/.test(c));
-                    const hasDivideXReverse = classNames.some(c => c === 'divide-x-reverse');
-                    const hasDivideYReverse = classNames.some(c => c === 'divide-y-reverse');
-
                     let divideStyle = {};
-                    if(divideColorClass) divideStyle['border-color'] = tailwindMap[divideColorClass]['--tw-divide-color'];
-                    if(divideStyleClass) divideStyle['border-style'] = divideStyleClass.substring('divide-'.length);
+                    const divideXClass = classNames.find(c => /^divide-x($|-[\d.]+$)/.test(c));
+                    const divideYClass = classNames.find(c => /^divide-y($|-[\d.]+$)/.test(c));
+                    const divideColorClass = classNames.find(c => tailwindMap[c]?.['border-color'] && c.startsWith('divide-'));
+                    const divideStyleClass = classNames.find(c => /^divide-(solid|dashed|dotted|double|none)$/.test(c));
                     
-                    if (divideXValueClass) {
-                        const width = divideXValueClass === 'divide-x' ? '1px' : (spacingScale[divideXValueClass.replace('divide-x-','')] || '1px');
-                        divideStyle['--tw-divide-x-reverse'] = hasDivideXReverse ? '1' : '0';
-                        divideStyle['border-right-width'] = `calc(${width} * var(--tw-divide-x-reverse))`;
-                        divideStyle['border-left-width'] = `calc(${width} * calc(1 - var(--tw-divide-x-reverse)))`;
+                    if(divideColorClass) divideStyle['border-color'] = tailwindMap[divideColorClass]['border-color'];
+                    if(divideStyleClass) divideStyle['border-style'] = tailwindMap[divideStyleClass]['border-style'];
+                    
+                    if (divideXClass) {
+                        const width = divideXClass === 'divide-x' ? '1px' : (spacingScale[divideXClass.replace('divide-x-','')] || '1px');
+                        divideStyle['border-left-width'] = width;
                     }
-                     if (divideYValueClass) {
-                        const width = divideYValueClass === 'divide-y' ? '1px' : (spacingScale[divideYValueClass.replace('divide-y-','')] || '1px');
-                        divideStyle['--tw-divide-y-reverse'] = hasDivideYReverse ? '1' : '0';
-                        divideStyle['border-bottom-width'] = `calc(${width} * var(--tw-divide-y-reverse))`;
-                        divideStyle['border-top-width'] = `calc(${width} * calc(1 - var(--tw-divide-y-reverse)))`;
+                     if (divideYClass) {
+                        const width = divideYClass === 'divide-y' ? '1px' : (spacingScale[divideYClass.replace('divide-y-','')] || '1px');
+                        divideStyle['border-top-width'] = width;
                     }
 
                     if (Object.keys(divideStyle).length > 0 && elementChildren.length > 1) {
                          applyStylesToChildren(elementChildren.slice(1), divideStyle, directiveVariants, nodes);
                     }
 
-                    // --- Handle Space ---
                     let spaceStyle = {};
-                    const spaceXClass = classNames.find(c => /^-?space-x-.+/.test(c) && c !== 'space-x-reverse');
-                    const spaceYClass = classNames.find(c => /^-?space-y-.+/.test(c) && c !== 'space-y-reverse');
-                    const hasSpaceXReverse = classNames.some(c => c === 'space-x-reverse');
-                    const hasSpaceYReverse = classNames.some(c => c === 'space-y-reverse');
+                    const spaceXClass = classNames.find(c => /^-?space-x-.+/.test(c));
+                    const spaceYClass = classNames.find(c => /^-?space-y-.+/.test(c));
 
                     if (spaceXClass) {
                         const value = parseSpaceValue(spaceXClass, spacingScale);
-                        if (value) {
-                            spaceStyle['--tw-space-x-reverse'] = '0'; // Default value
-                            spaceStyle['margin-inline-start'] = `calc(${value} * var(--tw-space-x-reverse))`;
-                            spaceStyle['margin-inline-end'] = `calc(${value} * calc(1 - var(--tw-space-x-reverse)))`;
-                        }
+                        if(value) spaceStyle['margin-left'] = value;
                     }
-                    if (hasSpaceXReverse) {
-                         spaceStyle['--tw-space-x-reverse'] = '1';
-                    }
-
                     if (spaceYClass) {
                         const value = parseSpaceValue(spaceYClass, spacingScale);
-                        if (value) {
-                             spaceStyle['--tw-space-y-reverse'] = '0'; // Default value
-                            spaceStyle['margin-block-start'] = `calc(${value} * var(--tw-space-y-reverse))`;
-                            spaceStyle['margin-block-end'] = `calc(${value} * calc(1 - var(--tw-space-y-reverse)))`;
-                        }
-                    }
-                    if (hasSpaceYReverse) {
-                        spaceStyle['--tw-space-y-reverse'] = '1';
+                        if(value) spaceStyle['margin-top'] = value;
                     }
                     
                     if (Object.keys(spaceStyle).length > 0 && elementChildren.length > 1) {
-                        const childrenToModify = elementChildren.slice(0, -1);
-                        applyStylesToChildren(childrenToModify, spaceStyle, directiveVariants, nodes);
+                        // FIX: Apply to all children except the first one
+                        applyStylesToChildren(elementChildren.slice(1), spaceStyle, directiveVariants, nodes);
                     }
                 }
              }
@@ -1030,17 +957,14 @@
                      rootElement = tempWrapper;
                 }
 
-                // Pass 1: Build the tree and collect directives
                 const nodes = {};
                 const rootId = processNode(rootElement, nodes, componentClassMap);
                 
-                // Pass 2: Apply directives to children
                 applyDirectives(nodes);
 
                 if (rootId) {
                     const rootNodeData = nodes[rootId];
                     delete nodes[rootId];
-                    // Clean up the directives property from the final output as it has been processed
                     Object.values(nodes).forEach(node => delete node.directives);
                     delete rootNodeData.directives;
                     nodes['root'] = rootNodeData;
@@ -1100,8 +1024,10 @@
             }
         });
         
-        // Initial conversion on load
-        pasteSampleBtn.click();
+        // Initial conversion on load if there's sample code
+        if(sampleHtml) {
+            pasteSampleBtn.click();
+        }
     </script>
 </body>
 </html>
